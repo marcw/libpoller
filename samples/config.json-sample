@@ -1,0 +1,15 @@
+{
+    "backends": ["stdout", "statsd"],
+    "checks": [
+        {
+            "key": "com_google",
+            "url": "http://google.com",
+            "interval": "10s"
+        },
+        {
+            "key": "fr_yahoo",
+            "url": "http://yahoo.fr",
+            "interval": "10s"
+        }
+    ]
+}
