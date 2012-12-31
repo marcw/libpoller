@@ -25,3 +25,11 @@ file in the project source tree.
 
 If you use the statsd backend, the "key" config file for a check will be used
 as the metric key.
+
+## What is likely to change in future release?
+
+- I'm currently not sure if I'll use json as a configuration format as
+  [s-expr](http://en.wikipedia.org/wiki/S-expression) are a much better thing
+  (and they supports COMMENTS)
+- Per-check configuration for each backend (i.e: the statsd metric name)
+- Poller will need to supports live-updating of the checks list
