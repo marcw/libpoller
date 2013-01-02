@@ -20,6 +20,10 @@ As the software is alpha now, I'll assume that you know how to build go
 softwares. For the others, I'll try to provide binaries soon enough once
 stability has been proven for 1 check to 1000s of checks.
 
+If you want to run it on heroku, I've made a sample repository for that
+available here:
+[https://github.com/marcw/poller-heroku](https://github.com/marcw/poller-heroku)
+
 ## How to configure it
 
 Configuration is done is a json file (for now). A sample configuration file
