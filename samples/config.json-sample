@@ -1,5 +1,5 @@
 {
-    "backends": ["stdout", "statsd"],
+    "backends": ["stdout"],
     "checks": [
         {
             "key": "com_google",
