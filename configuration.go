@@ -52,3 +52,9 @@ func (c *Configuration) Load(data []byte) {
 		c.Checks = append(c.Checks, *check)
 	}
 }
+
+func (c *Configuration) CloseBackends() {
+	for _, v := range c.Backends {
+		v.Close()
+	}
+}

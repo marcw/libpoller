@@ -12,6 +12,7 @@ import (
 type Backend interface {
 	// "Log" check result in the Backend service
 	Log(check *Check, statusCode int, duration time.Duration)
+	Close()
 }
 
 // Backend for Statsd
@@ -62,6 +63,10 @@ func (s *StatsdBackend) Log(check *Check, statusCode int, duration time.Duration
 	}
 }
 
+func (s *StatsdBackend) Close() {
+	// NO OP
+}
+
 // StdoutBackend logs result to Stdout
 type StdoutBackend struct {
 }
@@ -73,4 +78,8 @@ func NewStdoutBackend() *StdoutBackend {
 
 func (s *StdoutBackend) Log(check *Check, statusCode int, duration time.Duration) {
 	log.Println(check.Key, statusCode, duration)
+}
+
+func (s *StdoutBackend) Close() {
+	// NO OP
 }
