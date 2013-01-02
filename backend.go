@@ -5,7 +5,6 @@ import (
 	"github.com/peterbourgon/g2s"
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -57,9 +56,9 @@ func NewStatsdBackend() (*StatsdBackend, error) {
 func (s *StatsdBackend) Log(check *Check, statusCode int, duration time.Duration) {
 	s.statsd.Timing(1.0, check.Key+".duration", duration)
 	if 200 <= statusCode && 299 >= statusCode {
-		s.statsd.Gauge(1.0, check.Key+".success", strconv.Itoa(statusCode))
+		s.statsd.Counter(1.0, check.Key+".success", 1)
 	} else {
-		s.statsd.Gauge(1.0, check.Key+".error", strconv.Itoa(statusCode))
+		s.statsd.Counter(1.0, check.Key+".error", 1)
 	}
 }
 
