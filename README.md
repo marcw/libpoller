@@ -4,8 +4,15 @@ A simple and composable HTTP monitoring application written in Go.
 
 It's very alpha for now, so please bear with it.
 
-For now, the only supported backends are "librato", "statsd" and "stdout". I'll
-add more for sure.
+## What is it?
+
+Poller's job is to monitor http application by submitting GET requests to URL
+you define in a config file. These URLs are called "Checks".
+
+Once a check is done, the result is sent to one or many backend of your choice. 
+
+Current supported backend are stdout, syslog,
+[librato](http://metrics.librato.com/) and [statsd](://github.com/etsy/statsd).
 
 ## How to build/install it
 
@@ -13,23 +20,71 @@ As the software is alpha now, I'll assume that you know how to build go
 softwares. For the others, I'll try to provide binaries soon enough once
 stability has been proven for 1 check to 1000s of checks.
 
+## How to configure it
+
+Configuration is done is a json file (for now). A sample configuration file
+looks like this:
+
+    {
+        "backends": ["stdout", "syslog"],
+        "checks": [
+            {
+                "key": "com_google",
+                "url": "http://google.com",
+                "interval": "10s"
+            },
+            {
+                "key": "fr_yahoo",
+                "url": "http://yahoo.fr",
+                "interval": "10s"
+            }
+        ]
+    }
+
+This config file defines 2 backends and 2 checks. These two checks will be
+executes every 10 seconds. Configuration for the backend is achieved with
+environment variables.
+
+The `key` is the identifier that will be used in the output.
+
 ## How to run it
 
-If you use a stastd backend, make sure you provide at least the `STATSD_HOST`
-environment variable. You can also provide `STATSD_PORT` and `STATSD_PROTOCOL`
-but if you don't, they will respectively default to `8125` and `udp`.
+Running poller is really simple and is a metter of setting a few environment
+variables (if needed) and passing the binary the path of the configuration
+file.
 
-If you use the librato backend, make sure you provide the `LIBRATO_USER` and
-`LIBRATO_TOKEN` environment variable. Optionally, you could provide the
-`LIBRATO_SOURCE` environment variable but if you don't, it will defaults to
-"poller".
+### Backends configuration
 
-poller accepts only one argument which is the filename of a json file. This
-file describes the configuration. You can have a sample of this configuration
-file in the project source tree.
+Here is a list of supported backend and how to configure them with environment
+variables.
 
-If you use the statsd backend, the "key" config file for a check will be used
-as the metric key.
+#### Librato
+
+- `LIBRATO_USER` (required): Username of your librato account
+- `LIBRATO_TOKEN` (required): API token of your librato account
+- `LIBRATO_SOURCE` (optional): Source name for your metrics. Defaults to `poller`
+
+#### Stdout
+
+- No configuration is necessary.
+
+#### Statsd
+
+Statsd backend uses of these environment variables:
+
+- `STATSD_HOST` (required): Host of your statsd instance
+- `STATSD_PORT` (optional): Port of your statsd instance. Defaults to 8125.
+- `STATSD_PROTOCOL` (optional): Either `tcp` or `udp`. Defaults to `udp`.
+
+#### Syslog
+
+You can configure the syslog backend with these:
+
+- `SYSLOG_NETWORK` (optional): "tcp", "tcp4" (IPv4-only), "tcp6" (IPv6-only),
+  "udp", "udp4" (IPv4-only), "udp6" (IPv6-only), "ip", "ip4" (IPv4-only), "ip6"
+  (IPv6-only), "unix" and "unixpacket". Defaults to nothing.
+- `SYSLOG_ADDRESS` (optional): Address of your syslog daemon. Defaults to nothing.
+- `SYSLOG_PREFIX` (optional): This will be added to your log. Defaults to "poller".
 
 ## What is likely to change in future release?
 

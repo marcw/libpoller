@@ -48,6 +48,13 @@ func (c *Configuration) Load(data []byte) {
 				log.Fatalln("Impossible to instanciate the Librato backend:", err)
 			}
 			c.Backends = append(c.Backends, librato)
+
+		case v == "syslog":
+			syslog, err := NewSyslogBackend()
+			if err != nil {
+				log.Fatalln("Impossible to instanciate the syslog backend:", err)
+			}
+			c.Backends = append(c.Backends, syslog)
 		}
 	}
 
