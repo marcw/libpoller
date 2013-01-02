@@ -86,10 +86,18 @@ You can configure the syslog backend with these:
 - `SYSLOG_ADDRESS` (optional): Address of your syslog daemon. Defaults to nothing.
 - `SYSLOG_PREFIX` (optional): This will be added to your log. Defaults to "poller".
 
-## What is likely to change in future release?
+## What is buggy or likely to be changed/added in future release?
 
-- I'm currently not sure if I'll use json as a configuration format as
+- Timeouts are not configured and not even tested yet. As stated above, this software is very alpha for now.
+- Metrics might not be stored in a rightful way. Feel free to provide feedback.
+- I'm currently not sure if I'll keep using json as a configuration format as
   [s-expr](http://en.wikipedia.org/wiki/S-expression) are a much better thing
   (and they supports COMMENTS)
 - Per-check configuration for each backend (i.e: the statsd metric name)
 - Poller will need to supports live-updating of the checks list
+- Maintenance mode support.
+- Customization of the user agent.
+
+## License
+
+The Uptime code is free to use and distribute, under the [MIT license](https://github.com/marcw/poller/blob/master/LICENSE).
