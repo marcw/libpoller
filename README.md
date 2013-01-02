@@ -4,8 +4,8 @@ A simple and composable HTTP monitoring application written in Go.
 
 It's very alpha for now, so please bear with it.
 
-For now, the only supported backends are "statsd" and "stdout". I'll add more
-for sure.
+For now, the only supported backends are "librato", "statsd" and "stdout". I'll
+add more for sure.
 
 ## How to build/install it
 
@@ -18,6 +18,11 @@ stability has been proven for 1 check to 1000s of checks.
 If you use a stastd backend, make sure you provide at least the `STATSD_HOST`
 environment variable. You can also provide `STATSD_PORT` and `STATSD_PROTOCOL`
 but if you don't, they will respectively default to `8125` and `udp`.
+
+If you use the librato backend, make sure you provide the `LIBRATO_USER` and
+`LIBRATO_TOKEN` environment variable. Optionally, you could provide the
+`LIBRATO_SOURCE` environment variable but if you don't, it will defaults to
+"poller".
 
 poller accepts only one argument which is the filename of a json file. This
 file describes the configuration. You can have a sample of this configuration

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/peterbourgon/g2s"
+	"github.com/rcrowley/go-librato"
 	"log"
 	"os"
 	"time"
@@ -81,4 +82,47 @@ func (s *StdoutBackend) Log(check *Check, statusCode int, duration time.Duration
 
 func (s *StdoutBackend) Close() {
 	// NO OP
+}
+
+type LibratoBackend struct {
+	metrics librato.Metrics
+}
+
+func NewLibratoBackend() (*LibratoBackend, error) {
+	user := os.Getenv("LIBRATO_USER")
+	token := os.Getenv("LIBRATO_TOKEN")
+	source := os.Getenv("LIBRATO_SOURCE")
+
+	if user == "" {
+		return nil, fmt.Errorf("LIBRATO_USER environment variable must be defined")
+	}
+
+	if token == "" {
+		return nil, fmt.Errorf("LIBRATO_TOKEN environment variable must be defined")
+	}
+
+	if source == "" {
+		source = "poller"
+	}
+
+	metrics := librato.NewSimpleMetrics(user, token, source)
+
+	return &LibratoBackend{metrics}, nil
+}
+
+func (l *LibratoBackend) Log(check *Check, statusCode int, duration time.Duration) {
+	d := l.metrics.GetGauge(check.Key + ".duration")
+	d <- int64(duration.Nanoseconds() / int64(time.Millisecond))
+	if 200 <= statusCode && 299 >= statusCode {
+		c := l.metrics.GetCounter(check.Key + ".success")
+		c <- 1
+	} else {
+		c := l.metrics.GetCounter(check.Key + ".error")
+		c <- 1
+	}
+}
+
+func (l *LibratoBackend) Close() {
+	l.metrics.Close()
+	l.metrics.Wait()
 }

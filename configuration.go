@@ -41,6 +41,13 @@ func (c *Configuration) Load(data []byte) {
 		case v == "stdout":
 			stdout := NewStdoutBackend()
 			c.Backends = append(c.Backends, stdout)
+
+		case v == "librato":
+			librato, err := NewLibratoBackend()
+			if err != nil {
+				log.Fatalln("Impossible to instanciate the Librato backend:", err)
+			}
+			c.Backends = append(c.Backends, librato)
 		}
 	}
 
