@@ -30,6 +30,7 @@ Configuration is done is a json file (for now). A sample configuration file
 looks like this:
 
     {
+        "timeout": "5s",
         "backends": ["stdout", "syslog"],
         "checks": [
             {
@@ -47,7 +48,7 @@ looks like this:
 
 This config file defines 2 backends and 2 checks. These two checks will be
 executes every 10 seconds. Configuration for the backend is achieved with
-environment variables.
+environment variables. The connection timeout is set to 5 second.
 
 The `key` is the identifier that will be used in the output.
 
