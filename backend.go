@@ -145,18 +145,18 @@ func NewLibratoBackend() (*LibratoBackend, error) {
 
 func (l *LibratoBackend) LogSuccess(check *Check, statusCode int, duration time.Duration) {
 	l.logDuration(check, duration)
-	c := l.metrics.GetCounter(l.prefix + check.Key + ".up")
+	c := l.metrics.GetGauge(l.prefix + check.Key + ".up")
 	c <- 1
 }
 
 func (l *LibratoBackend) LogError(check *Check, statusCode int, duration time.Duration) {
 	l.logDuration(check, duration)
-	c := l.metrics.GetCounter(l.prefix + check.Key + ".up")
+	c := l.metrics.GetGauge(l.prefix + check.Key + ".up")
 	c <- 0
 }
 
 func (l *LibratoBackend) LogTimeout(check *Check) {
-	c := l.metrics.GetCounter(l.prefix + check.Key + ".up")
+	c := l.metrics.GetGauge(l.prefix + check.Key + ".up")
 	c <- 0
 }
 
