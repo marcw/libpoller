@@ -30,8 +30,9 @@ Configuration is done is a json file (for now). A sample configuration file
 looks like this:
 
     {
-        "timeout": "5s",
-        "backends": ["stdout", "syslog"],
+        "timeout":  "5s",
+        "userAgent": "Poller (https://github.com/marcw/poller)",
+        "backends": ["stdout", "librato"],
         "checks": [
             {
                 "key": "com_google",
@@ -42,15 +43,27 @@ looks like this:
                 "key": "fr_yahoo",
                 "url": "http://yahoo.fr",
                 "interval": "10s"
+            },
+            {
+                "key": "connect_sensiolabs_com_api",
+                "url": "https://connect.sensiolabs.com/api/",
+                "interval": "60s",
+                "headers": {
+                    "Accept": "application/vnd.com.sensiolabs.connect+xml"
+                }
             }
         ]
     }
 
-This config file defines 2 backends and 2 checks. These two checks will be
-executes every 10 seconds. Configuration for the backend is achieved with
-environment variables. The connection timeout is set to 5 second.
-
-The `key` is the identifier that will be used in the output.
+This config file defines 2 backends and 3 checks.
+- The connection timeout is 5s
+- The User agent is set to "Poller (https://github.com/marcw/poller)"
+- Two backends will be used: stdout and librato
+- `key` is the identifier used by backends.
+- The first two checks (`com_google` and `fr_yahoo`) will be checked every 10s
+- The third check will be checked every 60s
+- When checking the third check,the header `Accept:
+  application/vnd.com.sensiolabs.connect+xml` will be sent.
 
 ## How to run it
 
@@ -101,16 +114,19 @@ You can configure the syslog backend with these:
 - `SYSLOG_ADDRESS` (optional): Address of your syslog daemon. Defaults to nothing.
 - `SYSLOG_PREFIX` (optional): This will be added to your log. Defaults to "poller".
 
+Yes, you can send checks results to [loggly](http://www.loggly.com/) by using
+the syslog backend.
+
 ## What is buggy or likely to be changed/added in future release?
 
-- Metrics might not be stored in a rightful way. Feel free to provide feedback.
+- Metrics names for statsd/librato backends might not be named correctly. Feel
+  free to provide feedback.
 - I'm currently not sure if I'll keep using json as a configuration format as
   [s-expr](http://en.wikipedia.org/wiki/S-expression) are a much better thing
   (and they supports COMMENTS)
-- Per-check configuration for each backend (i.e: the statsd metric name)
+- Per-check configuration for each backend ? (i.e: the statsd metric name)
 - Poller will need to supports live-updating of the checks list
 - Maintenance mode support.
-- Customization of the user agent.
 
 ## License
 

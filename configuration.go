@@ -8,10 +8,11 @@ import (
 )
 
 type Configuration struct {
-	Url      string
-	Timeout  time.Duration
-	Backends []Backend
-	Checks   []Check
+	UserAgent string
+	Url       string
+	Timeout   time.Duration
+	Backends  []Backend
+	Checks    []Check
 }
 
 func (c *Configuration) Load(data []byte) {
@@ -19,12 +20,14 @@ func (c *Configuration) Load(data []byte) {
 		Url      string
 		Key      string
 		Interval string
+		Headers  map[string]string
 	}
 
 	type configuration struct {
-		Timeout  string
-		Backends []string
-		Checks   []check
+		UserAgent string
+		Timeout   string
+		Backends  []string
+		Checks    []check
 	}
 
 	config := &configuration{}
@@ -64,13 +67,15 @@ func (c *Configuration) Load(data []byte) {
 	}
 
 	for _, v := range config.Checks {
-		check, err := NewCheck(v.Url, v.Key, v.Interval)
+		check, err := NewCheck(v.Url, v.Key, v.Interval, v.Headers)
+		check.Header.Set("User-Agent", config.UserAgent)
 		if err != nil {
 			log.Fatalln("Check configuration error:", err)
 		}
 		c.Checks = append(c.Checks, *check)
 	}
 
+	c.UserAgent = config.UserAgent
 	c.Timeout, err = time.ParseDuration(config.Timeout)
 	if err != nil {
 		log.Fatalln("Invalid timeout value given:", err)
