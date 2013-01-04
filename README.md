@@ -6,27 +6,27 @@ It's very alpha for now, so please bear with it.
 
 ## What is it?
 
-Poller's job is to monitor http application by submitting GET requests to URL
+Poller's job is to monitor http applications by submitting GET requests to URL
 you define in a config file. These URLs are called "Checks".
 
-Once a check is done, the result is sent to one or many backend of your choice. 
+Once a check is done, the result is sent to one or many backends of your choice. 
 
-Current supported backend are stdout, syslog,
+Current supported backends are stdout, syslog,
 [librato](http://metrics.librato.com/) and [statsd](://github.com/etsy/statsd).
 
 ## How to build/install it
 
-As the software is alpha now, I'll assume that you know how to build go
+As the software is alpha now, I'll assume that you know how to build Go
 softwares. For the others, I'll try to provide binaries soon enough once
 stability has been proven for 1 check to 1000s of checks.
 
-If you want to run it on heroku, I've made a sample repository for that
-available here:
+If you want to run it on heroku, I've made a sample repository for that matter,
+available there:
 [https://github.com/marcw/poller-heroku](https://github.com/marcw/poller-heroku)
 
 ## How to configure it
 
-Configuration is done is a json file (for now). A sample configuration file
+Configuration is done is a json file. A sample configuration file
 looks like this:
 
     {
@@ -67,7 +67,7 @@ This config file defines 2 backends and 3 checks.
 
 ## How to run it
 
-Running poller is really simple and is a metter of setting a few environment
+Running poller is really simple and is a matter of setting a few environment
 variables (if needed) and passing the binary the path of the configuration
 file.
 
@@ -97,9 +97,11 @@ Given your check's key is `foobar`:
 On success:
   - `1` will be sent to metrics `foobar.up`
   - The duration in milliseconds will be sent to `foobar.duration`
+
 On error:
   - `0` will be sent to metrics `foobar.up`
   - The duration in milliseconds will be sent to `foobar.duration`
+
 On timeout:
   - `0` will be sent to metrics `foobar.up`
 
