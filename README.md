@@ -93,7 +93,6 @@ You can configure the syslog backend with these:
 
 ## What is buggy or likely to be changed/added in future release?
 
-- Timeouts are not configured and not even tested yet. As stated above, this software is very alpha for now.
 - Metrics might not be stored in a rightful way. Feel free to provide feedback.
 - I'm currently not sure if I'll keep using json as a configuration format as
   [s-expr](http://en.wikipedia.org/wiki/S-expression) are a much better thing
