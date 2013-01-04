@@ -93,6 +93,7 @@ variables.
 - `LIBRATO_SOURCE` (optional): Source name for your metrics. Defaults to `poller`
 
 Given your check's key is `foobar`:
+
 On success:
   - `1` will be sent to metrics `foobar.up`
   - The duration in milliseconds will be sent to `foobar.duration`
@@ -104,7 +105,13 @@ On timeout:
 
 #### Stdout
 
-- No configuration is necessary.
+No configuration is necessary.
+Output will look like this:
+
+    2012/01/24 11:35:16 com_google 200 345.271ms
+    2012/01/24 11:35:17 fr_yahoo 200 1.518175s
+    2012/01/24 11:35:16 com_google TIMEOUT
+
 
 #### Statsd
 
@@ -128,6 +135,8 @@ You can configure the syslog backend with these:
 
 Yes, you can send checks results to [loggly](http://www.loggly.com/) by using
 the syslog backend.
+
+Output formatting is the same as the stdout backend.
 
 ## What is buggy or likely to be changed/added in future release?
 
