@@ -1,14 +1,24 @@
 package main
 
 import (
-	_ "fmt"
-	_ "github.com/peterbourgon/g2s"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
 )
+
+func TimeoutDial(timeout time.Duration) func(netw, addr string) (net.Conn, error) {
+	return func(netw, addr string) (net.Conn, error) {
+		c, err := net.DialTimeout(netw, addr, timeout)
+		if err != nil {
+			return nil, err
+		}
+
+		return c, nil
+	}
+}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -24,19 +34,22 @@ func main() {
 	pollChannel := make(chan Check)
 
 	go func() {
-		client := &http.Client{}
+		client := &http.Client{Transport: &http.Transport{Dial: TimeoutDial(config.Timeout)}}
 		for {
 			check := <-pollChannel
+			// This go routine will exist for each check
 			go func() {
 				for {
 					time.Sleep(check.Interval)
 					statusCode, duration, err := check.Poll(client)
-					if err != nil {
-						log.Println(err)
-					}
-
 					for _, v := range config.Backends {
-						v.Log(&check, statusCode, duration)
+						if err != nil {
+							v.LogTimeout(&check)
+						} else if statusCode >= 200 && statusCode < 300 {
+							v.LogSuccess(&check, statusCode, duration)
+						} else {
+							v.LogError(&check, statusCode, duration)
+						}
 					}
 				}
 			}()

@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"time"
 )
 
 type Configuration struct {
+	Timeout  time.Duration
 	Backends []Backend
 	Checks   []Check
 }
@@ -18,6 +20,7 @@ func (c *Configuration) Load(data []byte) {
 	}
 
 	type configuration struct {
+		Timeout  string
 		Backends []string
 		Checks   []check
 	}
@@ -64,6 +67,11 @@ func (c *Configuration) Load(data []byte) {
 			log.Fatalln("Check configuration error:", err)
 		}
 		c.Checks = append(c.Checks, *check)
+	}
+
+	c.Timeout, err = time.ParseDuration(config.Timeout)
+	if err != nil {
+		log.Fatalln("Invalid timeout value given:", err)
 	}
 }
 

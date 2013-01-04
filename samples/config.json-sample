@@ -1,4 +1,5 @@
 {
+    "timeout": "500ms",
     "backends": ["stdout"],
     "checks": [
         {

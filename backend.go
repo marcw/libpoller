@@ -12,7 +12,9 @@ import (
 
 type Backend interface {
 	// "Log" check result in the Backend service
-	Log(check *Check, statusCode int, duration time.Duration)
+	LogSuccess(check *Check, statusCode int, duration time.Duration)
+	LogError(Check *Check, statusCode int, duration time.Duration)
+	LogTimeout(check *Check)
 	Close()
 }
 
@@ -55,13 +57,22 @@ func NewStatsdBackend() (*StatsdBackend, error) {
 // `Check.Key`.duration : Request duration
 // `Check.Key`.success : Request succeeded (status code is 2xx)
 // `Check.Key`.error : Request failed (status code != 200)
-func (s *StatsdBackend) Log(check *Check, statusCode int, duration time.Duration) {
+func (s *StatsdBackend) LogSuccess(check *Check, statusCode int, duration time.Duration) {
+	s.logDuration(check, duration)
+	s.statsd.Counter(1.0, check.Key+".up", 1)
+}
+
+func (s *StatsdBackend) LogError(check *Check, statusCode int, duration time.Duration) {
+	s.logDuration(check, duration)
+	s.statsd.Counter(1.0, check.Key+".up", 0)
+}
+
+func (s *StatsdBackend) LogTimeout(check *Check) {
+	s.statsd.Counter(1.0, check.Key+".up", 0)
+}
+
+func (s *StatsdBackend) logDuration(check *Check, duration time.Duration) {
 	s.statsd.Timing(1.0, check.Key+".duration", duration)
-	if 200 <= statusCode && 299 >= statusCode {
-		s.statsd.Counter(1.0, check.Key+".success", 1)
-	} else {
-		s.statsd.Counter(1.0, check.Key+".error", 1)
-	}
 }
 
 func (s *StatsdBackend) Close() {
@@ -77,8 +88,16 @@ func NewStdoutBackend() *StdoutBackend {
 	return &StdoutBackend{}
 }
 
-func (s *StdoutBackend) Log(check *Check, statusCode int, duration time.Duration) {
+func (s *StdoutBackend) LogSuccess(check *Check, statusCode int, duration time.Duration) {
 	log.Println(check.Key, statusCode, duration)
+}
+
+func (s *StdoutBackend) LogError(check *Check, statusCode int, duration time.Duration) {
+	log.Println(check.Key, statusCode, duration)
+}
+
+func (s *StdoutBackend) LogTimeout(check *Check) {
+	log.Println(check.Key, "TIMEOUT")
 }
 
 func (s *StdoutBackend) Close() {
@@ -111,16 +130,26 @@ func NewLibratoBackend() (*LibratoBackend, error) {
 	return &LibratoBackend{metrics}, nil
 }
 
-func (l *LibratoBackend) Log(check *Check, statusCode int, duration time.Duration) {
+func (l *LibratoBackend) LogSuccess(check *Check, statusCode int, duration time.Duration) {
+	l.logDuration(check, duration)
+	c := l.metrics.GetCounter(check.Key + ".up")
+	c <- 1
+}
+
+func (l *LibratoBackend) LogError(check *Check, statusCode int, duration time.Duration) {
+	l.logDuration(check, duration)
+	c := l.metrics.GetCounter(check.Key + ".up")
+	c <- 0
+}
+
+func (l *LibratoBackend) LogTimeout(check *Check) {
+	c := l.metrics.GetCounter(check.Key + ".up")
+	c <- 0
+}
+
+func (l *LibratoBackend) logDuration(check *Check, duration time.Duration) {
 	d := l.metrics.GetGauge(check.Key + ".duration")
 	d <- int64(duration.Nanoseconds() / int64(time.Millisecond))
-	if 200 <= statusCode && 299 >= statusCode {
-		c := l.metrics.GetCounter(check.Key + ".success")
-		c <- 1
-	} else {
-		c := l.metrics.GetCounter(check.Key + ".error")
-		c <- 1
-	}
 }
 
 func (l *LibratoBackend) Close() {
@@ -153,12 +182,16 @@ func NewSyslogBackend() (*SyslogBackend, error) {
 	return &SyslogBackend{writer: writer}, nil
 }
 
-func (s *SyslogBackend) Log(check *Check, statusCode int, duration time.Duration) {
-	if 200 <= statusCode && 299 >= statusCode {
-		s.writer.Info(fmt.Sprintln(check.Key, statusCode, duration))
-	} else {
-		s.writer.Err(fmt.Sprintln(check.Key, statusCode, duration))
-	}
+func (s *SyslogBackend) LogSuccess(check *Check, statusCode int, duration time.Duration) {
+	s.writer.Info(fmt.Sprintln(check.Key, statusCode, duration))
+}
+
+func (s *SyslogBackend) LogError(check *Check, statusCode int, duration time.Duration) {
+	s.writer.Err(fmt.Sprintln(check.Key, statusCode, duration))
+}
+
+func (s *SyslogBackend) LogTimeout(check *Check) {
+	s.writer.Err(fmt.Sprintln(check.Key, "TIMEOUT"))
 }
 
 func (s *SyslogBackend) Close() {
