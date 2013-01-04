@@ -21,6 +21,7 @@ type Backend interface {
 // Backend for Statsd
 type StatsdBackend struct {
 	statsd g2s.Statter
+	prefix string
 }
 
 // Instanciate a new StatsdBackend
@@ -28,10 +29,12 @@ type StatsdBackend struct {
 //   STATSD_HOST env variable
 //   STATSD_PORT env variable (defaults to 8125)
 //   STATSD_PROTOCOL env variable (defaults to udp)
+//   STATSD_PREFIX env variable (defaults to `poller.checks.`)
 func NewStatsdBackend() (*StatsdBackend, error) {
 	envHost := os.Getenv("STATSD_HOST")
 	envPort := os.Getenv("STATSD_PORT")
 	envProtocol := os.Getenv("STATSD_PROTOCOL")
+	envPrefix := os.Getenv("STATSD_PREFIX")
 
 	if envHost == "" {
 		return nil, fmt.Errorf("STATSD_HOST environment variable must be defined")
@@ -45,12 +48,16 @@ func NewStatsdBackend() (*StatsdBackend, error) {
 		envProtocol = "udp"
 	}
 
+	if envPrefix == "" {
+		envPrefix = "poller.checks."
+	}
+
 	statsd, err := g2s.Dial(envProtocol, envHost+":"+envPort)
 	if err != nil {
 		return nil, err
 	}
 
-	return &StatsdBackend{statsd}, nil
+	return &StatsdBackend{statsd: statsd, prefix: envPrefix}, nil
 }
 
 // Log to statsd the check result as follow:
@@ -59,20 +66,20 @@ func NewStatsdBackend() (*StatsdBackend, error) {
 // `Check.Key`.error : Request failed (status code != 200)
 func (s *StatsdBackend) LogSuccess(check *Check, statusCode int, duration time.Duration) {
 	s.logDuration(check, duration)
-	s.statsd.Counter(1.0, check.Key+".up", 1)
+	s.statsd.Counter(1.0, s.prefix+check.Key+".up", 1)
 }
 
 func (s *StatsdBackend) LogError(check *Check, statusCode int, duration time.Duration) {
 	s.logDuration(check, duration)
-	s.statsd.Counter(1.0, check.Key+".up", 0)
+	s.statsd.Counter(1.0, s.prefix+check.Key+".up", 0)
 }
 
 func (s *StatsdBackend) LogTimeout(check *Check) {
-	s.statsd.Counter(1.0, check.Key+".up", 0)
+	s.statsd.Counter(1.0, s.prefix+check.Key+".up", 0)
 }
 
 func (s *StatsdBackend) logDuration(check *Check, duration time.Duration) {
-	s.statsd.Timing(1.0, check.Key+".duration", duration)
+	s.statsd.Timing(1.0, s.prefix+check.Key+".duration", duration)
 }
 
 func (s *StatsdBackend) Close() {
@@ -106,12 +113,14 @@ func (s *StdoutBackend) Close() {
 
 type LibratoBackend struct {
 	metrics librato.Metrics
+	prefix  string
 }
 
 func NewLibratoBackend() (*LibratoBackend, error) {
 	user := os.Getenv("LIBRATO_USER")
 	token := os.Getenv("LIBRATO_TOKEN")
 	source := os.Getenv("LIBRATO_SOURCE")
+	prefix := os.Getenv("LIBRATO_PREFIX")
 
 	if user == "" {
 		return nil, fmt.Errorf("LIBRATO_USER environment variable must be defined")
@@ -125,30 +134,34 @@ func NewLibratoBackend() (*LibratoBackend, error) {
 		source = "poller"
 	}
 
+	if prefix == "" {
+		prefix = "poller.checks."
+	}
+
 	metrics := librato.NewSimpleMetrics(user, token, source)
 
-	return &LibratoBackend{metrics}, nil
+	return &LibratoBackend{metrics: metrics, prefix: prefix}, nil
 }
 
 func (l *LibratoBackend) LogSuccess(check *Check, statusCode int, duration time.Duration) {
 	l.logDuration(check, duration)
-	c := l.metrics.GetCounter(check.Key + ".up")
+	c := l.metrics.GetCounter(l.prefix + check.Key + ".up")
 	c <- 1
 }
 
 func (l *LibratoBackend) LogError(check *Check, statusCode int, duration time.Duration) {
 	l.logDuration(check, duration)
-	c := l.metrics.GetCounter(check.Key + ".up")
+	c := l.metrics.GetCounter(l.prefix + check.Key + ".up")
 	c <- 0
 }
 
 func (l *LibratoBackend) LogTimeout(check *Check) {
-	c := l.metrics.GetCounter(check.Key + ".up")
+	c := l.metrics.GetCounter(l.prefix + check.Key + ".up")
 	c <- 0
 }
 
 func (l *LibratoBackend) logDuration(check *Check, duration time.Duration) {
-	d := l.metrics.GetGauge(check.Key + ".duration")
+	d := l.metrics.GetGauge(l.prefix + check.Key + ".duration")
 	d <- int64(duration.Nanoseconds() / int64(time.Millisecond))
 }
 

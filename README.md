@@ -91,19 +91,20 @@ variables.
 - `LIBRATO_USER` (required): Username of your librato account
 - `LIBRATO_TOKEN` (required): API token of your librato account
 - `LIBRATO_SOURCE` (optional): Source name for your metrics. Defaults to `poller`
+- `LIBRATO_PREFIX` (optional): Prefix of your metrics. Defaults to `poller.checks.`
 
-Given your check's key is `foobar`:
+Given your check's key is `foobar` and `LIBRATO_PREFIX` is `acme.`:
 
 On success:
-  - `1` will be sent to metrics `foobar.up`
+  - `1` will be sent to metrics `acme.foobar.up`
   - The duration in milliseconds will be sent to `foobar.duration`
 
 On error:
-  - `0` will be sent to metrics `foobar.up`
+  - `0` will be sent to metrics `acme.foobar.up`
   - The duration in milliseconds will be sent to `foobar.duration`
 
 On timeout:
-  - `0` will be sent to metrics `foobar.up`
+  - `0` will be sent to metrics `acme.foobar.up`
 
 #### Stdout
 
@@ -122,6 +123,7 @@ Statsd backend uses of these environment variables:
 - `STATSD_HOST` (required): Host of your statsd instance
 - `STATSD_PORT` (optional): Port of your statsd instance. Defaults to 8125.
 - `STATSD_PROTOCOL` (optional): Either `tcp` or `udp`. Defaults to `udp`.
+- `STATSD_PREFIX` (optional): Prefix of your metrics. Defaults to `poller.checks.`
 
 The metrics are sent the same way as the Librato backend.
 
