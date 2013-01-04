@@ -60,5 +60,10 @@ func main() {
 		pollChannel <- v
 	}
 
+	if config.Url != "" {
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {})
+		http.ListenAndServe("", nil)
+	}
+
 	select {}
 }

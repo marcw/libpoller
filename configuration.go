@@ -3,10 +3,12 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"os"
 	"time"
 )
 
 type Configuration struct {
+	Url      string
 	Timeout  time.Duration
 	Backends []Backend
 	Checks   []Check
@@ -73,6 +75,8 @@ func (c *Configuration) Load(data []byte) {
 	if err != nil {
 		log.Fatalln("Invalid timeout value given:", err)
 	}
+
+	c.Url = os.Getenv("POLLER_URL")
 }
 
 func (c *Configuration) CloseBackends() {

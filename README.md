@@ -58,6 +58,16 @@ Running poller is really simple and is a metter of setting a few environment
 variables (if needed) and passing the binary the path of the configuration
 file.
 
+## How to monitor it
+
+Before launching poller, export `POLLER_URL` environment variable with something
+like this
+
+    export POLLER_URL="localhost:8000"
+
+and poller will launch a webserver. You can then poll
+"http://localhost:8000/health" and check if poller is still running
+
 ### Backends configuration
 
 Here is a list of supported backend and how to configure them with environment
