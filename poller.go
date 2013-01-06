@@ -62,7 +62,10 @@ func main() {
 
 	if config.Url != "" {
 		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {})
-		http.ListenAndServe("", nil)
+		err = http.ListenAndServe(config.Url, nil)
+		if err != nil {
+			log.Fatalln("Unable to start http server", err)
+		}
 	}
 
 	select {}
