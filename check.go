@@ -35,6 +35,7 @@ func (c *Check) Poll(client *http.Client) (int, time.Duration, error) {
 	if err != nil {
 		return 0, 0, err
 	}
+	defer resp.Body.Close()
 
 	return resp.StatusCode, time.Duration(end - start), nil
 }
