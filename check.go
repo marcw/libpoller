@@ -2,17 +2,18 @@ package main
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 )
 
 type Check struct {
-	Url      string
+	Url      *url.URL
 	Key      string
 	Interval time.Duration
 	Header   http.Header
 }
 
-func NewCheck(url, key, duration string, headers map[string]string) (*Check, error) {
+func NewCheck(checkUrl, key, duration string, headers map[string]string) (*Check, error) {
 	d, err := time.ParseDuration(duration)
 	if err != nil {
 		return nil, err
@@ -23,11 +24,16 @@ func NewCheck(url, key, duration string, headers map[string]string) (*Check, err
 		h.Set(k, v)
 	}
 
-	return &Check{Url: url, Key: key, Interval: d, Header: h}, nil
+	u, err := url.Parse(checkUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Check{Url: u, Key: key, Interval: d, Header: h}, nil
 }
 
 func (c *Check) Poll(client *http.Client) (int, time.Duration, error) {
-	req, err := http.NewRequest("GET", c.Url, nil)
+	req, err := http.NewRequest("GET", c.Url.String(), nil)
 	req.Header = c.Header
 	start := time.Now().UnixNano()
 	resp, err := client.Do(req)
