@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestLoadBasicConfiguration(t *testing.T) {
+func TestLoadBasicConfig(t *testing.T) {
 	json := `{
     "backends": ["stdout"],
     "checks": [
@@ -21,14 +21,14 @@ func TestLoadBasicConfiguration(t *testing.T) {
     ]
 }`
 
-	config := &Configuration{}
+	config := &Config{}
 	err := config.Load([]byte(json))
 	if err != nil {
-		t.Error("Configuration failed to load with a valid json file")
+		t.Error("Config failed to load with a valid json file")
 	}
 
 	if config.UserAgent != DEFAULT_USER_AGENT {
-		t.Error("Configuration should have default User-Agent if none is provided")
+		t.Error("Config should have default User-Agent if none is provided")
 	}
 
 	timeout, _ := time.ParseDuration(DEFAULT_TIMEOUT)
@@ -50,7 +50,7 @@ func TestLoadBasicConfiguration(t *testing.T) {
 	}
 }
 
-func TestLoadCustomizedConfiguration(t *testing.T) {
+func TestLoadCustomizedConfig(t *testing.T) {
 	json := `{
     "userAgent": "foobar",
     "backends": ["stdout"],
@@ -72,19 +72,19 @@ func TestLoadCustomizedConfiguration(t *testing.T) {
     ]
 }`
 
-	config := &Configuration{}
+	config := &Config{}
 	err := config.Load([]byte(json))
 	if err != nil {
 		t.Log(err)
-		t.Error("Configuration failed to load with a valid json file")
+		t.Error("Config failed to load with a valid json file")
 	}
 
 	if config.Timeout.Seconds() != 5 {
-		t.Error("Configuration should have customized global timeout")
+		t.Error("Config should have customized global timeout")
 	}
 
 	if config.UserAgent != "foobar" {
 		fmt.Println(config.UserAgent)
-		t.Error("Configuration should have customized user-agent")
+		t.Error("Config should have customized user-agent")
 	}
 }

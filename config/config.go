@@ -1,8 +1,10 @@
-package main
+package config
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/marcw/poller/backend"
+	"github.com/marcw/poller/check"
 	"os"
 	"time"
 )
@@ -12,16 +14,20 @@ const (
 	DEFAULT_USER_AGENT = "Poller (https://github.com/marcw/poller)"
 )
 
-type Configuration struct {
+type Config struct {
 	UserAgent string
 	Url       string
 	Timeout   time.Duration
-	Backends  []Backend
-	Checks    []Check
+	Backends  []backend.Backend
+	Checks    []check.Check
 }
 
-func (c *Configuration) Load(data []byte) error {
-	type check struct {
+func NewConfig() *Config {
+	return &Config{}
+}
+
+func (c *Config) Load(data []byte) error {
+	type ccheck struct {
 		Url      string
 		Key      string
 		Interval string
@@ -32,7 +38,7 @@ func (c *Configuration) Load(data []byte) error {
 		Backends  []string
 		UserAgent string
 		Timeout   string
-		Checks    []check
+		Checks    []ccheck
 	}
 
 	config := &configuration{}
@@ -45,25 +51,25 @@ func (c *Configuration) Load(data []byte) error {
 	for _, v := range config.Backends {
 		switch {
 		case v == "statsd":
-			statsd, err := NewStatsdBackend()
+			statsd, err := backend.NewStatsdBackend()
 			if err != nil {
 				return fmt.Errorf("Impossible to instanciate the Statsd backend: %s", err)
 			}
 			c.Backends = append(c.Backends, statsd)
 
 		case v == "stdout":
-			stdout := NewStdoutBackend()
+			stdout := backend.NewStdoutBackend()
 			c.Backends = append(c.Backends, stdout)
 
 		case v == "librato":
-			librato, err := NewLibratoBackend()
+			librato, err := backend.NewLibratoBackend()
 			if err != nil {
 				return fmt.Errorf("Impossible to instanciate the Librato backend: %s", err)
 			}
 			c.Backends = append(c.Backends, librato)
 
 		case v == "syslog":
-			syslog, err := NewSyslogBackend()
+			syslog, err := backend.NewSyslogBackend()
 			if err != nil {
 				return fmt.Errorf("Impossible to instanciate the syslog backend: %s", err)
 			}
@@ -80,12 +86,12 @@ func (c *Configuration) Load(data []byte) error {
 	}
 
 	for _, v := range config.Checks {
-		check, err := NewCheck(v.Url, v.Key, v.Interval, v.Headers)
+		chk, err := check.NewCheck(v.Url, v.Key, v.Interval, v.Headers)
 		if err != nil {
 			return fmt.Errorf("Check configuration error: %s", err)
 		}
-		check.Header.Set("User-Agent", config.UserAgent)
-		c.Checks = append(c.Checks, *check)
+		chk.Header.Set("User-Agent", config.UserAgent)
+		c.Checks = append(c.Checks, *chk)
 	}
 
 	c.UserAgent = config.UserAgent
@@ -99,7 +105,7 @@ func (c *Configuration) Load(data []byte) error {
 	return nil
 }
 
-func (c *Configuration) CloseBackends() {
+func (c *Config) CloseBackends() {
 	for _, v := range c.Backends {
 		v.Close()
 	}

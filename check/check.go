@@ -1,4 +1,4 @@
-package main
+package check
 
 import (
 	"net/http"
@@ -30,18 +30,4 @@ func NewCheck(checkUrl, key, duration string, headers map[string]string) (*Check
 	}
 
 	return &Check{Url: u, Key: key, Interval: d, Header: h}, nil
-}
-
-func (c *Check) Poll(client *http.Client) (int, time.Duration, error) {
-	req, err := http.NewRequest("GET", c.Url.String(), nil)
-	req.Header = c.Header
-	start := time.Now().UnixNano()
-	resp, err := client.Do(req)
-	end := time.Now().UnixNano()
-	if err != nil {
-		return 0, 0, err
-	}
-	defer resp.Body.Close()
-
-	return resp.StatusCode, time.Duration(end - start), nil
 }
