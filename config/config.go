@@ -86,7 +86,7 @@ func (c *Config) Load(data []byte) error {
 	}
 
 	for _, v := range config.Checks {
-		chk, err := check.NewCheck(v.Url, v.Key, v.Interval, v.Headers)
+		chk, err := check.NewCheck(v.Url, v.Key, v.Interval, config.Timeout, v.Headers)
 		if err != nil {
 			return fmt.Errorf("Check configuration error: %s", err)
 		}

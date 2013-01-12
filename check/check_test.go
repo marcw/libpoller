@@ -1,27 +1,22 @@
 package check
 
-//import (
-	//"net/http"
-	//"net/http/httptest"
-	//"testing"
-//)
+import (
+	"testing"
+)
 
-//type successPollHandler struct {
-//}
+func TestNewCheck(t *testing.T) {
+	_, err := NewCheck("https://google.com", "foobar", "1s", "1s", make(map[string]string))
+	if err != nil {
+		t.Error("NewCheck should not returns an error here")
+	}
 
-//func (p successPollHandler) ServeHTTP(http.ResponseWriter, *http.Request) {
-//}
+	_, err = NewCheck("http://google.com", "foobar", "1s", "1s", make(map[string]string))
+	if err != nil {
+		t.Error("NewCheck should not returns an error here")
+	}
 
-//func TestPollIsContactingHttpServer(t *testing.T) {
-	//server := httptest.NewServer(successPollHandler{})
-	//defer server.Close()
-
-	//check, _ := NewCheck(server.URL, "foobar", "10s", make(map[string]string))
-	//statusCode, _, err := check.Poll()
-	//if err != nil {
-		//t.Error(err)
-	//}
-	//if statusCode != 200 {
-		//t.Error("statusCode should be 200")
-	//}
-//}
+	_, err = NewCheck("https://google.com:8444", "foobar", "1s", "1s", make(map[string]string))
+	if err != nil {
+		t.Error("NewCheck should not returns an error here")
+	}
+}

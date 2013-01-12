@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/marcw/poller/check"
 	"github.com/marcw/poller/config"
+	"github.com/marcw/poller/poll"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -21,20 +22,24 @@ func main() {
 	}
 	cfg.Load(buffer)
 
+	poll := poll.NewHttpPoller()
+
 	for _, v := range cfg.Checks {
 		go func(chck check.Check) {
 			for {
 				time.Sleep(chck.Interval)
-				statusCode, duration, err := chck.Poll()
-				for _, v := range cfg.Backends {
-					if err != nil {
-						v.LogTimeout(&chck)
-					} else if statusCode >= 200 && statusCode < 300 {
-						v.LogSuccess(&chck, statusCode, duration)
-					} else {
-						v.LogError(&chck, statusCode, duration)
+				go func(c *check.Check) {
+					event := poll.Poll(c)
+					for _, v := range cfg.Backends {
+						if event.Timeout {
+							v.LogTimeout(c)
+						} else if event.Up {
+							v.LogSuccess(c, event.StatusCode, event.Duration)
+						} else {
+							v.LogError(c, event.StatusCode, event.Duration)
+						}
 					}
-				}
+				}(&chck)
 			}
 		}(v)
 	}
