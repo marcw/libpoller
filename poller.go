@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/marcw/poller/check"
 	"github.com/marcw/poller/config"
 	"github.com/marcw/poller/poll"
@@ -11,12 +12,21 @@ import (
 	"time"
 )
 
+var (
+	configFile = flag.String("config", "", "Path to config file")
+)
+
+func init() {
+	flag.Parse()
+}
+
 func main() {
-	if len(os.Args) < 2 {
-		log.Fatalf("Please provide, as a argument to this software, the path to the valid json configuration file")
+	if *configFile == "" {
+		flag.Usage()
+		os.Exit(1)
 	}
 	cfg := config.NewConfig()
-	buffer, err := ioutil.ReadFile(os.Args[1])
+	buffer, err := ioutil.ReadFile(*configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
