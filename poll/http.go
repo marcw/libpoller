@@ -9,8 +9,8 @@ import (
 )
 
 type HttpPoller struct {
-    UserAgent string
-    Timeout   time.Duration
+	UserAgent string
+	Timeout   time.Duration
 }
 
 func NewHttpPoller(ua string, timeout time.Duration) *HttpPoller {
@@ -36,7 +36,7 @@ func (p HttpPoller) Poll(c *check.Check) *check.CheckEvent {
 		client := httputil.NewClientConn(conn, nil)
 		req, err := http.NewRequest("GET", c.Url.String(), nil)
 		req.Header = c.Header
-        req.Header.Set("User-Agent", p.UserAgent)
+		req.Header.Set("User-Agent", p.UserAgent)
 
 		resp, err := client.Do(req)
 		if err != nil {

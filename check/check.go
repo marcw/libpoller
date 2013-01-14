@@ -105,20 +105,20 @@ func (cl ChecksList) AddFromJson(data []byte) error {
 }
 
 func (cl ChecksList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    if (r.Method == "PUT") {
-        data, err := ioutil.ReadAll(r.Body)
-        if err != nil {
-            http.Error(w, err.Error(), 500)
+	if r.Method == "PUT" {
+		data, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
 
-            return
-        }
+			return
+		}
 
-        err = cl.AddFromJson(data)
-        if err != nil {
-            http.Error(w, err.Error(), 400)
+		err = cl.AddFromJson(data)
+		if err != nil {
+			http.Error(w, err.Error(), 400)
 
-            return
-        }
+			return
+		}
 	}
 }
 
