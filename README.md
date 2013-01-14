@@ -18,7 +18,7 @@ Current supported backends are stdout, syslog,
 
 As the software is alpha now, I'll assume that you know how to build Go
 softwares. For the others, I'll try to provide binaries soon enough once
-stability has been proven for 1 check to 1000s of checks.
+stability has been proven for 1 to 1000s of checks.
 
 If you want to run it on heroku, I've made a sample repository for that matter,
 available there:
@@ -26,60 +26,49 @@ available there:
 
 ## How to configure it
 
-Configuration is done is a json file. A sample configuration file
-looks like this:
+Configuration is done via:
 
-    {
-        "timeout":  "5s",
-        "userAgent": "Poller (https://github.com/marcw/poller)",
-        "backends": ["stdout", "librato"],
-        "checks": [
-            {
-                "key": "com_google",
-                "url": "http://google.com",
-                "interval": "10s"
-            },
-            {
-                "key": "fr_yahoo",
-                "url": "http://yahoo.fr",
-                "interval": "10s"
-            },
-            {
-                "key": "connect_sensiolabs_com_api",
-                "url": "https://connect.sensiolabs.com/api/",
-                "interval": "60s",
-                "headers": {
-                    "Accept": "application/vnd.com.sensiolabs.connect+xml"
-                }
+- Environment variables for backend.
+- JSON for list of checks
+- Flags passed when executing the program.
+
+A typical json file for checks looks like this
+
+    [
+        {
+            "key": "com_google",
+            "url": "http://google.com",
+            "interval": "10s"
+        },
+        {
+            "key": "fr_yahoo",
+            "url": "http://yahoo.fr",
+            "interval": "10s"
+        },
+        {
+            "key": "connect_sensiolabs_com_api",
+            "url": "https://connect.sensiolabs.com/api/",
+            "interval": "60s",
+            "headers": {
+                "Accept": "application/vnd.com.sensiolabs.connect+xml"
             }
-        ]
-    }
+        }
+    ]
 
-This config file defines 2 backends and 3 checks.
-- The connection timeout is 5s
-- The User agent is set to "Poller (https://github.com/marcw/poller)"
-- Two backends will be used: stdout and librato
-- `key` is the identifier used by backends.
-- The first two checks (`com_google` and `fr_yahoo`) will be checked every 10s
-- The third check will be checked every 60s
-- When checking the third check,the header `Accept:
-  application/vnd.com.sensiolabs.connect+xml` will be sent.
+The JSON config file is optional as checks can be added thanks to the HTTP endpoint `/checks`.
 
-## How to run it
-
-Running poller is really simple and is a matter of setting a few environment
-variables (if needed) and passing the binary the path of the configuration
-file.
+Running `./poller --help` will prints a list of available options.
 
 ## How to monitor it
 
-Before launching poller, export `POLLER_URL` environment variable with something
-like this
+A `/health` http endpoint is available. If poller is answering a 200, then all
+is good!
 
-    export POLLER_URL="localhost:8000"
+## How to add checks while poller is running
 
-and poller will launch a webserver. You can then poll
-"http://localhost:8000/health" and check if poller is still running
+Poller supports live configuration changes thanks to the `/checks` http endpoint.
+Send a `PUT` request with a valid config JSON in the body of the request and poller
+will append the checks to its list.
 
 ### Backends configuration
 
@@ -144,14 +133,7 @@ Output formatting is the same as the stdout backend.
 
 ## What is buggy or likely to be changed/added in future release?
 
-- Metrics names for statsd/librato backends might not be named correctly. Feel
-  free to provide feedback.
-- I'm currently not sure if I'll keep using json as a configuration format as
-  [s-expr](http://en.wikipedia.org/wiki/S-expression) are a much better thing
-  (and they supports COMMENTS)
-- Per-check configuration for each backend ? (i.e: the statsd metric name)
-- Poller will need to supports live-updating of the checks list
-- Maintenance mode support.
+- Maintenance mode support. (ie: pausing checks)
 
 ## License
 

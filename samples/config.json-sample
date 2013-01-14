@@ -1,25 +1,20 @@
-{
-    "timeout":  "5s",
-    "userAgent": "Poller (https://github.com/marcw/poller)",
-    "backends": ["stdout"],
-    "checks": [
-        {
-            "key": "com_google",
-            "url": "http://google.com",
-            "interval": "10s"
-        },
-        {
-            "key": "fr_yahoo",
-            "url": "http://yahoo.fr",
-            "interval": "10s"
-        },
-        {
-            "key": "connect_sensiolabs_com_api",
-            "url": "https://connect.sensiolabs.com/api/",
-            "interval": "60s",
-            "headers": {
-                "Accept": "application/vnd.com.sensiolabs.connect+xml"
-            }
+[
+    {
+        "key": "com_google",
+        "url": "http://google.com",
+        "interval": "10s"
+    },
+    {
+        "key": "fr_yahoo",
+        "url": "http://yahoo.fr",
+        "interval": "10s"
+    },
+    {
+        "key": "connect_sensiolabs_com_api",
+        "url": "https://connect.sensiolabs.com/api/",
+        "interval": "60s",
+        "headers": {
+            "Accept": "application/vnd.com.sensiolabs.connect+xml"
         }
-    ]
-}
+    }
+]

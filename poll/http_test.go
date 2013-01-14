@@ -30,9 +30,9 @@ func TestSuccessfullPoll(t *testing.T) {
 	server := httptest.NewServer(successPollHandler{})
 	defer server.Close()
 
-	poll := NewHttpPoller()
+	poll := NewHttpPoller("foobar", 10*time.Second)
 
-	c, _ := check.NewCheck(server.URL, "foobar", "10s", "10s", make(map[string]string))
+	c, _ := check.NewCheck(server.URL, "foobar", "10s", make(map[string]string))
 	event := poll.Poll(c)
 	if event.StatusCode != 200 {
 		t.Error("statusCode should be 200")
@@ -52,9 +52,9 @@ func TestFailedPoll(t *testing.T) {
 	server := httptest.NewServer(errorPollHandler{})
 	defer server.Close()
 
-	poll := NewHttpPoller()
+	poll := NewHttpPoller("foobar", 10*time.Second)
 
-	c, _ := check.NewCheck(server.URL, "foobar", "10s", "10s", make(map[string]string))
+	c, _ := check.NewCheck(server.URL, "foobar", "10s", make(map[string]string))
 	event := poll.Poll(c)
 	if event.StatusCode != 500 {
 		t.Error("statusCode should be 500")
@@ -71,9 +71,9 @@ func TestTimeoutedPoll(t *testing.T) {
 	server := httptest.NewServer(timeoutPollHandler{})
 	defer server.Close()
 
-	poll := NewHttpPoller()
+	poll := NewHttpPoller("foobar", 100*time.Millisecond)
 
-	c, _ := check.NewCheck(server.URL, "foobar", "10s", "100ms", make(map[string]string))
+	c, _ := check.NewCheck(server.URL, "foobar", "10s", make(map[string]string))
 	event := poll.Poll(c)
 	if event.StatusCode != 0 {
 		t.Error("statusCode should be 0")
