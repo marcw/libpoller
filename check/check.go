@@ -104,8 +104,38 @@ func (cl ChecksList) AddFromJson(data []byte) error {
 	return nil
 }
 
+func (cl ChecksList) JSON() ([]byte, error) {
+	checks := jsonChecks{}
+	for _, v := range cl {
+		header := make(map[string]string)
+		for k, h := range v.Header {
+			header[k] = h[0]
+		}
+
+		check := jsonCheck{Url: v.Url.String(), Key: v.Key, Interval: v.Interval.String(), Headers: header}
+		checks = append(checks, check)
+	}
+	data, err := json.Marshal(checks)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
 func (cl ChecksList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "PUT" {
+	if r.Method == "GET" {
+		data, err := cl.JSON()
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+		}
+
+		w.Write(data)
+
+		return
+	}
+
+	if r.Method == "POST" {
 		data, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
@@ -119,6 +149,15 @@ func (cl ChecksList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 			return
 		}
+	}
+
+	// TODO: Need to implement PUT. But it means wiping the CheckList which can
+	// cause problem when iterating on it in the main command.
+}
+
+func (cl ChecksList) Wipe() {
+	for k, _ := range cl {
+		delete(cl, k)
 	}
 }
 

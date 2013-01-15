@@ -1,6 +1,7 @@
 package check
 
 import (
+	_ "fmt"
 	"testing"
 )
 
@@ -43,7 +44,6 @@ func TestLoadBasicConfig(t *testing.T) {
 		t.Log(err)
 		t.Error("Config failed to load with a valid json file")
 	}
-	t.Log(c)
 
 	check, ok := c["connect_sensiolabs_com_api"]
 	if !ok {
@@ -51,7 +51,36 @@ func TestLoadBasicConfig(t *testing.T) {
 		t.FailNow()
 	}
 
-	t.Log(check)
+	if check.Header.Get("Accept") != "application/vnd.com.sensiolabs.connect+xml" {
+		t.Error("Check headers does not contain Accept header")
+	}
+
+	if check.Interval.Seconds() != 60 {
+		t.Errorf("Check interval should be equal to 60s.")
+	}
+
+	data, err := c.JSON()
+	if err != nil {
+		t.Log(err)
+		t.Error("Marshaling to JSON should not fail")
+	}
+	c.Wipe()
+	if len(c) > 0 {
+		t.Error("After Wipe, length should be 0")
+	}
+
+	err = c.AddFromJson(data)
+	if err != nil {
+		t.Log(err)
+		t.Error("Config failed to load with a valid json file")
+	}
+
+	check, ok = c["connect_sensiolabs_com_api"]
+	if !ok {
+		t.Log("Checkslist should contain key check")
+		t.FailNow()
+	}
+
 	if check.Header.Get("Accept") != "application/vnd.com.sensiolabs.connect+xml" {
 		t.Error("Check headers does not contain Accept header")
 	}
