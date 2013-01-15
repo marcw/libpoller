@@ -1,5 +1,7 @@
 # Poller
 
+[![Build Status](https://travis-ci.org/marcw/poller.png?branch=master)](https://travis-ci.org/marcw/poller)
+
 A simple and composable HTTP monitoring application written in Go.
 
 It's very alpha for now, so please bear with it.
@@ -130,10 +132,6 @@ Yes, you can send checks results to [loggly](http://www.loggly.com/) by using
 the syslog backend.
 
 Output formatting is the same as the stdout backend.
-
-## What is buggy or likely to be changed/added in future release?
-
-- Maintenance mode support. (ie: pausing checks)
 
 ## License
 
