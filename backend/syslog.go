@@ -5,7 +5,6 @@ import (
 	"github.com/marcw/poller/check"
 	"log/syslog"
 	"os"
-	"time"
 )
 
 type SyslogBackend struct {
@@ -33,16 +32,12 @@ func NewSyslogBackend() (*SyslogBackend, error) {
 	return &SyslogBackend{writer: writer}, nil
 }
 
-func (s *SyslogBackend) LogSuccess(check *check.Check, statusCode int, duration time.Duration) {
-	s.writer.Info(fmt.Sprintln(check.Key, statusCode, duration))
-}
-
-func (s *SyslogBackend) LogError(check *check.Check, statusCode int, duration time.Duration) {
-	s.writer.Err(fmt.Sprintln(check.Key, statusCode, duration))
-}
-
-func (s *SyslogBackend) LogTimeout(check *check.Check) {
-	s.writer.Err(fmt.Sprintln(check.Key, "TIMEOUT"))
+func (s *SyslogBackend) Log(e *check.Event) {
+	if e.Up {
+		s.writer.Info(fmt.Sprintln(e.Check.Key, btos(e.Up), e.Duration))
+	} else {
+		s.writer.Err(fmt.Sprintln(e.Check.Key, btos(e.Up), e.Duration))
+	}
 }
 
 func (s *SyslogBackend) Close() {

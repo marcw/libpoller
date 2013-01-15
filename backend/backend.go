@@ -2,49 +2,41 @@ package backend
 
 import (
 	"github.com/marcw/poller/check"
-	"time"
 )
 
 type Backend interface {
-	LogSuccess(check *check.Check, statusCode int, duration time.Duration)
-	LogError(Check *check.Check, statusCode int, duration time.Duration)
-	LogTimeout(check *check.Check)
+	Log(e *check.Event)
 	Close()
 }
 
-type BackendsList map[Backend]bool
+type Pool map[Backend]bool
 
-var Backends = make(BackendsList)
-
-func (bl BackendsList) Add(b Backend) {
-	bl[b] = true
+func (p Pool) Add(b Backend) {
+	p[b] = true
 }
 
-func (bl BackendsList) LogSuccess(c *check.Check, statusCode int, duration time.Duration) {
-	for k, _ := range bl {
-		k.LogSuccess(c, statusCode, duration)
+func (p Pool) Log(event *check.Event) {
+	for k, _ := range p {
+		k.Log(event)
 	}
 }
 
-func (bl BackendsList) LogError(c *check.Check, statusCode int, duration time.Duration) {
-	for k, _ := range bl {
-		k.LogError(c, statusCode, duration)
-	}
-}
-
-func (bl BackendsList) LogTimeout(c *check.Check) {
-	for k, _ := range bl {
-		k.LogTimeout(c)
-	}
-}
-
-func (bl BackendsList) Close() {
-	for k, _ := range bl {
+func (p Pool) Close() {
+	for k, _ := range p {
 		k.Close()
 	}
 }
 
-// Will init backends based on their defaults environment value
-func Add(b Backend) {
-	Backends.Add(b)
+func btou(b bool) int64 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+func btos(b bool) string {
+	if b {
+		return "UP"
+	}
+	return "DOWN"
 }

@@ -2,9 +2,9 @@ package poll
 
 import (
 	"github.com/marcw/poller/check"
-	"net"
+	//"net"
 	"net/http"
-	"net/http/httputil"
+	//"net/http/httputil"
 	"time"
 )
 
@@ -17,55 +17,44 @@ func NewHttpPoller(ua string, timeout time.Duration) *HttpPoller {
 	return &HttpPoller{UserAgent: ua, Timeout: timeout}
 }
 
-func (p HttpPoller) Poll(c *check.Check) *check.CheckEvent {
-	event := check.NewCheckEvent(c)
+func (p HttpPoller) Poll(c *check.Check) *check.Event {
+	event := check.NewEvent(c)
 	timer := time.NewTimer(p.Timeout)
+	ch := make(chan *check.Event, 1)
 
 	start := time.Now().UnixNano()
-	conn, err := net.Dial("tcp", c.Addr.String())
-	if err != nil {
-		end := time.Now().UnixNano()
-		event.Duration = time.Duration(end - start)
-
-		return event
-	}
-
-	defer conn.Close()
-	ch := make(chan *check.CheckEvent, 1)
-	go func() {
-		client := httputil.NewClientConn(conn, nil)
+	go func(e *check.Event, eventCh chan<- *check.Event) {
+		client := &http.Client{Jar: nil}
 		req, err := http.NewRequest("GET", c.Url.String(), nil)
 		req.Header = c.Header
 		req.Header.Set("User-Agent", p.UserAgent)
 
 		resp, err := client.Do(req)
 		if err != nil {
-			ch <- event
+			eventCh <- e
 			return
 		}
 		defer resp.Body.Close()
 
-		end := time.Now().UnixNano()
-
-		event.StatusCode = resp.StatusCode
-		event.Duration = time.Duration(end - start)
-		if event.StatusCode == 200 {
-			event.Up = true
+		e.StatusCode = resp.StatusCode
+		if e.StatusCode == 200 {
+			e.Up = true
 		}
 
-		ch <- event
-	}()
+		eventCh <- e
+	}(event, ch)
 
 	select {
 	case <-timer.C:
 		end := time.Now().UnixNano()
 		event.Duration = time.Duration(end - start)
-		event.Timeout = true
 		event.Up = false
 
 		return event
 
 	case e := <-ch:
+		end := time.Now().UnixNano()
+		event.Duration = time.Duration(end - start)
 		return e
 	}
 	panic("unreachable")

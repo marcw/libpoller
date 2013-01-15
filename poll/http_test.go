@@ -40,9 +40,6 @@ func TestSuccessfullPoll(t *testing.T) {
 	if event.Up != true {
 		t.Error("Up should be true")
 	}
-	if event.Timeout != false {
-		t.Error("Timeouted should be false")
-	}
 	if event.Duration.Nanoseconds() == 0 {
 		t.Error("Duration can't be equals to 0 nanosecond")
 	}
@@ -62,9 +59,6 @@ func TestFailedPoll(t *testing.T) {
 	if event.Up != false {
 		t.Error("Up should be false")
 	}
-	if event.Timeout != false {
-		t.Error("Timeouted should be false")
-	}
 }
 
 func TestTimeoutedPoll(t *testing.T) {
@@ -80,8 +74,5 @@ func TestTimeoutedPoll(t *testing.T) {
 	}
 	if event.Up != false {
 		t.Error("Up should be false")
-	}
-	if event.Timeout != true {
-		t.Error("Timeouted should be false")
 	}
 }

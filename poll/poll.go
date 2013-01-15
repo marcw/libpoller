@@ -5,5 +5,5 @@ import (
 )
 
 type Poller interface {
-	Poll(c *check.Check) *check.CheckEvent
+	Poll(c *check.Check) *check.Event
 }

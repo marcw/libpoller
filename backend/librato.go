@@ -40,26 +40,12 @@ func NewLibratoBackend() (*LibratoBackend, error) {
 	return &LibratoBackend{metrics: metrics, prefix: prefix}, nil
 }
 
-func (l *LibratoBackend) LogSuccess(check *check.Check, statusCode int, duration time.Duration) {
-	l.logDuration(check, duration)
-	c := l.metrics.GetGauge(l.prefix + check.Key + ".up")
-	c <- 1
-}
+func (l *LibratoBackend) Log(e *check.Event) {
+	d := l.metrics.GetGauge(l.prefix + e.Check.Key + ".duration")
+	d <- int64(e.Duration.Nanoseconds() / int64(time.Millisecond))
 
-func (l *LibratoBackend) LogError(check *check.Check, statusCode int, duration time.Duration) {
-	l.logDuration(check, duration)
-	c := l.metrics.GetGauge(l.prefix + check.Key + ".up")
-	c <- 0
-}
-
-func (l *LibratoBackend) LogTimeout(check *check.Check) {
-	c := l.metrics.GetGauge(l.prefix + check.Key + ".up")
-	c <- 0
-}
-
-func (l *LibratoBackend) logDuration(check *check.Check, duration time.Duration) {
-	d := l.metrics.GetGauge(l.prefix + check.Key + ".duration")
-	d <- int64(duration.Nanoseconds() / int64(time.Millisecond))
+	c := l.metrics.GetGauge(l.prefix + e.Check.Key + ".up")
+	c <- btou(e.Up)
 }
 
 func (l *LibratoBackend) Close() {

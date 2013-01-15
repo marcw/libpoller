@@ -41,15 +41,15 @@ func TestLoadBasicConfig(t *testing.T) {
         "Accept": "application/vnd.com.sensiolabs.connect+xml"
 }}]`
 
-	c := ChecksList{}
-	err := c.AddFromJson([]byte(json))
+	s := NewScheduler()
+	err := s.AddFromJSON([]byte(json))
 	if err != nil {
 		t.Log(err)
 		t.Error("Config failed to load with a valid json file")
 	}
 
-	check, ok := c["connect_sensiolabs_com_api"]
-	if !ok {
+	check := s.Get("connect_sensiolabs_com_api")
+	if check == nil {
 		t.Log("Checkslist should contain key check")
 		t.FailNow()
 	}
@@ -62,24 +62,24 @@ func TestLoadBasicConfig(t *testing.T) {
 		t.Errorf("Check interval should be equal to 60s.")
 	}
 
-	data, err := c.JSON()
+	data, err := s.JSON()
 	if err != nil {
 		t.Log(err)
 		t.Error("Marshaling to JSON should not fail")
 	}
-	c.Wipe()
-	if len(c) > 0 {
+	s.Wipe()
+	if s.Len() > 0 {
 		t.Error("After Wipe, length should be 0")
 	}
 
-	err = c.AddFromJson(data)
+	err = s.AddFromJSON(data)
 	if err != nil {
 		t.Log(err)
 		t.Error("Config failed to load with a valid json file")
 	}
 
-	check, ok = c["connect_sensiolabs_com_api"]
-	if !ok {
+	check = s.Get("connect_sensiolabs_com_api")
+	if check == nil {
 		t.Log("Checkslist should contain key check")
 		t.FailNow()
 	}
@@ -94,9 +94,9 @@ func TestLoadBasicConfig(t *testing.T) {
 }
 
 func TestServeHTTP(t *testing.T) {
-	c := ChecksList{}
+	s := NewScheduler()
 
-	server := httptest.NewServer(c)
+	server := httptest.NewServer(s)
 	defer server.Close()
 
 	json := `[
@@ -126,8 +126,8 @@ func TestServeHTTP(t *testing.T) {
 	if resp.StatusCode != 201 {
 		t.Errorf("Status code should be 201. Got %d", resp.StatusCode)
 	}
-	check, ok := c["connect_sensiolabs_com_api"]
-	if !ok {
+	check := s.Get("connect_sensiolabs_com_api")
+	if check == nil {
 		t.Log("Checkslist should contain key check")
 		t.FailNow()
 	}
@@ -153,7 +153,7 @@ func TestServeHTTP(t *testing.T) {
 	}
 	json = string(data)
 	resp.Body.Close()
-	c.Wipe()
+	s.Wipe()
 
 	r, err = http.NewRequest("POST", server.URL, strings.NewReader(json))
 	if err != nil {
@@ -167,8 +167,8 @@ func TestServeHTTP(t *testing.T) {
 	if resp.StatusCode != 201 {
 		t.Errorf("Status code should be 201. Got %d", resp.StatusCode)
 	}
-	check, ok = c["connect_sensiolabs_com_api"]
-	if !ok {
+	check = s.Get("connect_sensiolabs_com_api")
+	if check == nil {
 		t.Log("Checkslist should contain key check")
 		t.FailNow()
 	}
