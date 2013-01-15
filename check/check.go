@@ -149,6 +149,9 @@ func (cl ChecksList) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 			return
 		}
+
+		w.WriteHeader(201)
+        return
 	}
 
 	// TODO: Need to implement PUT. But it means wiping the CheckList which can
