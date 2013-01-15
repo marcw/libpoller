@@ -153,7 +153,7 @@ func TestServeHTTP(t *testing.T) {
 	}
 	json = string(data)
 	resp.Body.Close()
-    c.Wipe()
+	c.Wipe()
 
 	r, err = http.NewRequest("POST", server.URL, strings.NewReader(json))
 	if err != nil {
