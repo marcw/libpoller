@@ -132,7 +132,7 @@ Output formatting is the same as the stdout backend.
 ## Why Go?
 
 A Go application has the advantage of being concurrent, fast, cross-compilable
-and easily deployable. I think it's a lot of good reasons to create a
+and easily deployable. I think that's a lot of good reasons to create a
 monitoring system out of this language.
 
 ### Install go
