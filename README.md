@@ -90,21 +90,17 @@ On success:
   - `1` will be sent to metrics `acme.foobar.up`
   - The duration in milliseconds will be sent to `foobar.duration`
 
-On error:
+On error or timeout:
   - `0` will be sent to metrics `acme.foobar.up`
   - The duration in milliseconds will be sent to `foobar.duration`
-
-On timeout:
-  - `0` will be sent to metrics `acme.foobar.up`
 
 #### Stdout
 
 No configuration is necessary.
 Output will look like this:
 
-    2012/01/24 11:35:16 com_google 200 345.271ms
-    2012/01/24 11:35:17 fr_yahoo 200 1.518175s
-    2012/01/24 11:35:16 com_google TIMEOUT
+    2012/01/24 11:35:16 com_google UP 345.271ms
+    2012/01/24 11:35:17 fr_yahoo DOWN 1.518175s
 
 
 #### Statsd
@@ -135,4 +131,4 @@ Output formatting is the same as the stdout backend.
 
 ## License
 
-The Uptime code is free to use and distribute, under the [MIT license](https://github.com/marcw/poller/blob/master/LICENSE).
+The Poller code is free to use and distribute, under the [MIT license](https://github.com/marcw/poller/blob/master/LICENSE).
