@@ -18,13 +18,10 @@ Current supported backends are stdout, syslog,
 
 ## How to build/install it
 
-As the software is alpha now, I'll assume that you know how to build Go
-softwares. For the others, I'll try to provide binaries soon enough once
-stability has been proven for 1 to 1000s of checks.
+Given you have a working go install, this command will produce the poller
+binary in `./bin/poller`
 
-If you want to run it on heroku, I've made a sample repository for that matter,
-available there:
-[https://github.com/marcw/poller-heroku](https://github.com/marcw/poller-heroku)
+    $ ./bin/build
 
 ## How to configure it
 

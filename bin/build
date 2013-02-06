@@ -1,0 +1,2 @@
+#!env bash
+go build -o bin/poller ./cmd/poller 
