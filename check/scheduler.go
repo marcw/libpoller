@@ -49,7 +49,7 @@ func (s *Scheduler) Get(key string) *Check {
 }
 
 func (s *Scheduler) Len() int {
-    return len(s.checks)
+	return len(s.checks)
 }
 
 func (s *Scheduler) AddFromJSON(data []byte) error {

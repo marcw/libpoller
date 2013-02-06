@@ -52,8 +52,7 @@ func main() {
 	}(scheduler.ToPoll, backendPool, pollerPool)
 	go scheduler.Run()
 
-    select {
-	}
+	select {}
 }
 
 func loadChecksFromFile(s *check.Scheduler) error {
