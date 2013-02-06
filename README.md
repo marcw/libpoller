@@ -129,6 +129,36 @@ the syslog backend.
 
 Output formatting is the same as the stdout backend.
 
+## Why Go?
+
+A Go application has the advantage of being concurrent, fast, cross-compilable
+and easily deployable. I think it's a lot of good reasons to create a
+monitoring system out of this language.
+
+### Install go
+
+note: OSX users, do NOT install Go from homebrew. At time of writing, the
+package is broken and won't let you cross-compile.
+
+Please follow instructions from:
+[http://golang.org/doc/install/source](http://golang.org/doc/install/source)
+
+Please set a `$GOROOT` env var in your `~/.bashrc.` file. If you unpacked the
+go source in `/home/you/go`:
+
+    export GOROOT=/home/you/go
+
+Please also set a `$GOPATH` env var in your `~/.bashrc` file. `$GOPATH` is
+where go will look for packages and where you clone private projects.  An
+example of `$GOPATH` would be `/home/you/work/go`.
+
+    export GOPATH=/home/you/work/go
+
+### Enable cross compilation with Go
+
+Follow this really good blogpost:
+[http://dave.cheney.net/2012/09/08/an-introduction-to-cross-compilation-with-go](http://dave.cheney.net/2012/09/08/an-introduction-to-cross-compilation-with-go)
+
 ## License
 
 The Poller code is free to use and distribute, under the [MIT license](https://github.com/marcw/poller/blob/master/LICENSE).
