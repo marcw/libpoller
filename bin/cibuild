@@ -1,2 +1,2 @@
-#!env bash
+#!/bin/sh
 go test -v ./...
