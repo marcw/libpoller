@@ -51,7 +51,7 @@ func NewStatsdBackend() (*StatsdBackend, error) {
 
 func (s *StatsdBackend) Log(e *check.Event) {
 	s.statsd.Timing(1.0, s.prefix+e.Check.Key+".duration", e.Duration)
-	s.statsd.Counter(1.0, s.prefix+e.Check.Key+".up", int(btou(e.Up)))
+	s.statsd.Counter(1.0, s.prefix+e.Check.Key+".up", int(btou(e.IsUp())))
 }
 
 func (s *StatsdBackend) Close() {

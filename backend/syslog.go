@@ -33,10 +33,13 @@ func NewSyslogBackend() (*SyslogBackend, error) {
 }
 
 func (s *SyslogBackend) Log(e *check.Event) {
-	if e.Up {
-		s.writer.Info(fmt.Sprintln(e.Check.Key, btos(e.Up), e.Duration))
+	if e.IsUp() {
+		s.writer.Info(fmt.Sprintln(e.Check.Key, btos(e.IsUp()), e.Duration))
 	} else {
-		s.writer.Err(fmt.Sprintln(e.Check.Key, btos(e.Up), e.Duration))
+		s.writer.Err(fmt.Sprintln(e.Check.Key, btos(e.IsUp()), e.Duration))
+	}
+	if e.Alert {
+		s.writer.Alert(fmt.Sprintln(e.Check.Key, btos(e.IsUp()), e.Check.DownSince))
 	}
 }
 

@@ -59,7 +59,7 @@ func (s *Scheduler) AddFromJSON(data []byte) error {
 	}
 
 	for _, v := range checks {
-		chk, err := NewCheck(v.Url, v.Key, v.Interval, v.Headers)
+		chk, err := NewCheck(v.Url, v.Key, v.Interval, v.Alert, v.AlertDelay, v.Headers)
 		if err != nil {
 			return err
 		}
@@ -78,7 +78,7 @@ func (s *Scheduler) JSON() ([]byte, error) {
 			header[k] = h[0]
 		}
 
-		check := jsonCheck{Url: v.Url.String(), Key: v.Key, Interval: v.Interval.String(), Headers: header}
+		check := jsonCheck{Url: v.Url.String(), Key: v.Key, Interval: v.Interval.String(), Alert: v.Alert, AlertDelay: v.AlertDelay.String(), Headers: header}
 		checks = append(checks, check)
 	}
 	data, err := json.Marshal(checks)

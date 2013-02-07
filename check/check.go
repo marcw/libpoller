@@ -8,36 +8,48 @@ import (
 )
 
 type Check struct {
-	Url      *url.URL
-	Addr     net.Addr
-	Key      string
-	Interval time.Duration
-	Header   http.Header
-}
-
-// Represents the state of a Check after being polled
-type Event struct {
-	Check      *Check        // check
-	Duration   time.Duration // total duration of check
-	StatusCode int           // http status code, if any
-	Time       time.Time     // time of check
-	Up         bool
+	Url        *url.URL      // URL of check
+	Addr       net.Addr      // 
+	Key        string        // Key (should be unique among same Scheduler
+	Interval   time.Duration // Interval between each check
+	Header     http.Header   // HTTP Headers (if any)
+	UpSince    time.Time     // Time since the service is up
+	DownSince  time.Time     // Time since the service is down
+	Alert      bool          // Raise alert if service is down
+	Alerted    bool          // Is backend already alerted?
+	NotifyFix  bool          // Notify if service is back up
+	AlertDelay time.Duration // Delay before raising an alert (zero value = NOW)
 }
 
 // Used for marshalling / unmarshalling
 type jsonCheck struct {
-	Url      string
-	Key      string
-	Interval string
-	Headers  map[string]string
+	Url        string
+	Key        string
+	Interval   string
+	Alert      bool
+	AlertDelay string
+	Headers    map[string]string
 }
 
 type jsonChecks []jsonCheck
 
-func NewCheck(checkUrl, key, interval string, headers map[string]string) (*Check, error) {
+// Check if it's time to send the alert. Returns true if it is.
+func (c *Check) ShouldAlert() bool {
+	return c.Alert && !c.Alerted && c.DownSince.Add(c.AlertDelay).Before(time.Now())
+}
+
+func NewCheck(checkUrl, key, interval string, alert bool, alertDelay string, headers map[string]string) (*Check, error) {
 	d, err := time.ParseDuration(interval)
 	if err != nil {
 		return nil, err
+	}
+
+	var ad time.Duration
+	if alert {
+		ad, err = time.ParseDuration(alertDelay)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	h := http.Header{}
@@ -65,9 +77,5 @@ func NewCheck(checkUrl, key, interval string, headers map[string]string) (*Check
 		return nil, err
 	}
 
-	return &Check{Url: u, Key: key, Interval: d, Header: h, Addr: a}, nil
-}
-
-func NewEvent(check *Check) *Event {
-	return &Event{Time: time.Now(), Check: check, Up: false}
+	return &Check{Url: u, Key: key, Interval: d, Header: h, Addr: a, Alert: alert, AlertDelay: ad}, nil
 }

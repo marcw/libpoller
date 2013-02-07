@@ -38,7 +38,7 @@ func (p HttpPoller) Poll(c *check.Check) *check.Event {
 
 		e.StatusCode = resp.StatusCode
 		if e.StatusCode == 200 {
-			e.Up = true
+			e.Up()
 		}
 
 		eventCh <- e
@@ -48,7 +48,7 @@ func (p HttpPoller) Poll(c *check.Check) *check.Event {
 	case <-timer.C:
 		end := time.Now().UnixNano()
 		event.Duration = time.Duration(end - start)
-		event.Up = false
+		event.Down()
 
 		return event
 

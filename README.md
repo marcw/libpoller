@@ -35,9 +35,11 @@ A typical json file for checks looks like this
 
     [
         {
-            "key": "com_google",
-            "url": "http://google.com",
-            "interval": "10s"
+            "key": "com_google",                // Key should be unique among all checks specified
+            "url": "http://google.com",         // URL of the check
+            "interval": "10s",                  // Check will be perfom every 10s. Format available here: http://godoc.org/time#ParseDuration
+            "alert": true,                      // (optional) Enable "alerts" for this checks. Backends will have an extra behaviour if true
+            "alertDelay": "60s"                 // (optional) Wait 60s (or 5 other checks) before sending an alert
         },
         {
             "key": "fr_yahoo",
@@ -49,7 +51,7 @@ A typical json file for checks looks like this
             "url": "https://connect.sensiolabs.com/api/",
             "interval": "60s",
             "headers": {
-                "Accept": "application/vnd.com.sensiolabs.connect+xml"
+                "Accept": "application/vnd.com.sensiolabs.connect+xml"  // (optional) Added HTTP header
             }
         }
     ]
@@ -72,7 +74,7 @@ will append the checks to its list.
 ### Backends configuration
 
 Here is a list of supported backend and how to configure them with environment
-variables.
+variables. 
 
 #### Librato
 
@@ -98,6 +100,7 @@ Output will look like this:
 
     2012/01/24 11:35:16 com_google UP 345.271ms
     2012/01/24 11:35:17 fr_yahoo DOWN 1.518175s
+    2012/01/24 11:35:17 fr_yahoo ALERT Down since 2006-01-02 15:04:05.999999999 -0700 MST
 
 
 #### Statsd

@@ -37,8 +37,8 @@ func TestSuccessfullPoll(t *testing.T) {
 	if event.StatusCode != 200 {
 		t.Error("statusCode should be 200")
 	}
-	if event.Up != true {
-		t.Error("Up should be true")
+	if event.IsUp() != true {
+		t.Error("IsUp() should be true")
 	}
 	if event.Duration.Nanoseconds() == 0 {
 		t.Error("Duration can't be equals to 0 nanosecond")
@@ -56,8 +56,8 @@ func TestFailedPoll(t *testing.T) {
 	if event.StatusCode != 500 {
 		t.Error("statusCode should be 500")
 	}
-	if event.Up != false {
-		t.Error("Up should be false")
+	if event.IsUp() != false {
+		t.Error("IsUp() should be false")
 	}
 }
 
@@ -72,7 +72,7 @@ func TestTimeoutedPoll(t *testing.T) {
 	if event.StatusCode != 0 {
 		t.Error("statusCode should be 0")
 	}
-	if event.Up != false {
-		t.Error("Up should be false")
+	if event.IsUp() != false {
+		t.Error("IsUp() should be false")
 	}
 }

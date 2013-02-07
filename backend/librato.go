@@ -45,7 +45,7 @@ func (l *LibratoBackend) Log(e *check.Event) {
 	d <- int64(e.Duration.Nanoseconds() / int64(time.Millisecond))
 
 	c := l.metrics.GetGauge(l.prefix + e.Check.Key + ".up")
-	c <- btou(e.Up)
+	c <- btou(e.IsUp())
 }
 
 func (l *LibratoBackend) Close() {
