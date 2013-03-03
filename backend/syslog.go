@@ -38,9 +38,6 @@ func (s *SyslogBackend) Log(e *check.Event) {
 	} else {
 		s.writer.Err(fmt.Sprintln(e.Check.Key, btos(e.IsUp()), e.Duration))
 	}
-	if e.Alert {
-		s.writer.Alert(fmt.Sprintln(e.Check.Key, btos(e.IsUp()), e.Check.DownSince))
-	}
 }
 
 func (s *SyslogBackend) Close() {

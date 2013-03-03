@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/marcw/poller/alert"
 	"github.com/marcw/poller/backend"
 	"github.com/marcw/poller/check"
 	"github.com/marcw/poller/poll"
@@ -20,6 +21,7 @@ var (
 	userAgent  = flag.String("ua", "Poller (https://github.com/marcw/poller)", "User agent used by Poller")
 	timeout    = flag.Duration("timeout", 10*time.Second, "Timeout")
 	backends   = flag.String("backends", "stdout", "Backends to enable. Comma separated.")
+	alerts     = flag.String("alerts", "smtp", "Alerts to enable. Comma separated.")
 )
 
 func init() {
@@ -38,18 +40,26 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	alerterPool, err := instanciateAlerterPool()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	pollerPool := poll.NewHttpPoller(*userAgent, *timeout)
 
 	go httpInput(scheduler)
-	go func(toPoll <-chan *check.Check, bp *backend.Pool, pp poll.Poller) {
+	go func(toPoll <-chan *check.Check, bp *backend.Pool, pp poll.Poller, ap *alert.Pool) {
 		for {
 			toPollCheck := <-toPoll
-			go func(c *check.Check, b *backend.Pool, p poll.Poller) {
-				b.Log(p.Poll(c))
-			}(toPollCheck, bp, pp)
+			go func(c *check.Check, b *backend.Pool, p poll.Poller, a *alert.Pool) {
+				event := p.Poll(c)
+				b.Log(event)
+				if event.Check.ShouldAlert() {
+					a.Alert(event)
+				}
+			}(toPollCheck, bp, pp, ap)
 		}
-	}(scheduler.ToPoll, backendPool, pollerPool)
+	}(scheduler.ToPoll, backendPool, pollerPool, alerterPool)
 	go scheduler.Run()
 
 	select {}
@@ -96,6 +106,22 @@ func instanciateBackendPool() (*backend.Pool, error) {
 				return nil, fmt.Errorf("Impossible to instanciate the syslog backend: %s", err)
 			}
 			pool.Add(syslog)
+		}
+	}
+
+	return &pool, nil
+}
+
+func instanciateAlerterPool() (*alert.Pool, error) {
+	pool := make(alert.Pool)
+	for _, v := range strings.Split(*alerts, ",") {
+		switch {
+		case v == "smtp":
+			smtp, err := alert.NewSmtpAlerter()
+			if err != nil {
+				return nil, fmt.Errorf("Impossible to instanciate the smtp backend: %s", err)
+			}
+			pool.Add(smtp)
 		}
 	}
 

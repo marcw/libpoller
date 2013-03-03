@@ -17,7 +17,7 @@ func NewHttpPoller(ua string, timeout time.Duration) *HttpPoller {
 	return &HttpPoller{UserAgent: ua, Timeout: timeout}
 }
 
-func (p HttpPoller) Poll(c *check.Check) *check.Event {
+func (p *HttpPoller) Poll(c *check.Check) *check.Event {
 	event := check.NewEvent(c)
 	timer := time.NewTimer(p.Timeout)
 	ch := make(chan *check.Event, 1)
@@ -39,6 +39,8 @@ func (p HttpPoller) Poll(c *check.Check) *check.Event {
 		e.StatusCode = resp.StatusCode
 		if e.StatusCode == 200 {
 			e.Up()
+		} else {
+			e.Down()
 		}
 
 		eventCh <- e

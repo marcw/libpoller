@@ -26,6 +26,10 @@ func (e *Event) IsUp() bool {
 func (e *Event) Up() {
 	e.up = true
 
+	if e.Check.UpSince.IsZero() {
+		e.Check.UpSince = e.Time
+	}
+
 	// if service was down
 	if !e.Check.DownSince.IsZero() {
 		e.Check.UpSince = e.Time
@@ -36,6 +40,10 @@ func (e *Event) Up() {
 
 func (e *Event) Down() {
 	e.up = false
+
+	if e.Check.DownSince.IsZero() {
+		e.Check.DownSince = e.Time
+	}
 
 	// if service was up
 	if !e.Check.UpSince.IsZero() {
