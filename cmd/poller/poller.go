@@ -21,7 +21,7 @@ var (
 	userAgent  = flag.String("ua", "Poller (https://github.com/marcw/poller)", "User agent used by Poller")
 	timeout    = flag.Duration("timeout", 10*time.Second, "Timeout")
 	backends   = flag.String("backends", "stdout", "Backends to enable. Comma separated.")
-	alerts     = flag.String("alerts", "smtp", "Alerts to enable. Comma separated.")
+	alerts     = flag.String("alerts", "", "Alerts to enable. Comma separated. ie: \"smtp\"")
 )
 
 func init() {
