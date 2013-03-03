@@ -58,16 +58,22 @@ The JSON config file is optional as checks can be added thanks to the HTTP endpo
 
 Running `./poller --help` will prints a list of available options.
 
-## How to monitor it
+## How to monitor it?
 
 A `/health` http endpoint is available. If poller is answering a 200, then all
 is good!
+
+## How to receive alerts when a check is down?
+
+Alerting and alerting delay is customisable for each check (Please read the example configuration).
+"Alerters" are enabled from the command line. Please run `poller --help`.
 
 ## How to add checks while poller is running
 
 Poller supports live configuration changes thanks to the `/checks` http endpoint.
 Send a `PUT` request with a valid config JSON in the body of the request and poller
 will append the checks to its list.
+
 
 ### Backends configuration
 
@@ -126,6 +132,21 @@ Yes, you can send checks results to [loggly](http://www.loggly.com/) by using
 the syslog backend.
 
 Output formatting is the same as the stdout backend.
+
+## Alerters configuration
+
+### SMTP
+
+SMTP alerter is configured using these environment variables:
+
+- `SMTP_HOST`: (required) ie: localhost
+- `SMTP_PORT`: (required) ie: 25
+- `SMTP_AUTH`: (optional) "MD5" or "PLAIN"
+- `SMTP_USERNAME`: (optional)
+- `SMTP_PASSWORD`: (optional)
+- `SMTP_PLAIN_IDENTITY`: (optional)
+- `SMTP_RECIPIENT`: (required) ie: monitoring@example.org
+- `SMTP_FROM`: (required) ie: poller@example.org
 
 ## Why Go?
 
