@@ -37,7 +37,7 @@ A typical json file for checks looks like this
             "url": "http://google.com",         // URL of the check
             "interval": "10s",                  // Check will be perfom every 10s. Format available here: http://godoc.org/time#ParseDuration
             "alert": true,                      // (optional) Enable "alerts" for this checks. Backends will have an extra behaviour if true
-            "alertDelay": "60s"                 // (optional) Wait 60s (or 5 other checks) before sending an alert
+            "alertDelay": "60s"                 // (required if alert is set) Wait 60s (or 5 other checks) before sending an alert
         },
         {
             "key": "fr_yahoo",
