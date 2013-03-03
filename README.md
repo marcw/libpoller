@@ -1,7 +1,5 @@
 # Poller
 
-[![Build Status](https://travis-ci.org/marcw/poller.png?branch=master)](https://travis-ci.org/marcw/poller)
-
 A simple and composable HTTP monitoring application written in Go.
 
 It's very alpha for now, so please bear with it.
@@ -162,3 +160,6 @@ Follow this really good blogpost:
 ## License
 
 The Poller code is free to use and distribute, under the [MIT license](https://github.com/marcw/poller/blob/master/LICENSE).
+
+[![Build Status](https://travis-ci.org/marcw/poller.png?branch=master)](https://travis-ci.org/marcw/poller)
+
