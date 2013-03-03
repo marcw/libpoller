@@ -13,6 +13,8 @@
         "key": "connect_sensiolabs_com_api",
         "url": "https://connect.sensiolabs.com/api/",
         "interval": "60s",
+        "alert": true,
+        "alertDelay": "0s",
         "headers": {
             "Accept": "application/vnd.com.sensiolabs.connect+xml"
         }
