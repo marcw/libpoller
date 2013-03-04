@@ -33,6 +33,7 @@ func (e *Event) Up() {
 	// if service was down
 	if !e.Check.DownSince.IsZero() {
 		e.Check.UpSince = e.Time
+		e.Check.WasDownFor = e.Time.Sub(e.Check.DownSince)
 		e.Check.DownSince = time.Time{}
 		e.NotifyFix = e.Check.NotifyFix
 	}
@@ -48,6 +49,7 @@ func (e *Event) Down() {
 	// if service was up
 	if !e.Check.UpSince.IsZero() {
 		e.Check.DownSince = e.Time
+		e.Check.WasUpFor = e.Time.Sub(e.Check.UpSince)
 		e.Check.UpSince = time.Time{}
 
 		// Is it time we alert backend?

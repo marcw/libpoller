@@ -59,7 +59,7 @@ func (s *Scheduler) AddFromJSON(data []byte) error {
 	}
 
 	for _, v := range checks {
-		chk, err := NewCheck(v.Url, v.Key, v.Interval, v.Alert, v.AlertDelay, v.Headers)
+		chk, err := NewCheck(v.Url, v.Key, v.Interval, v.Alert, v.AlertDelay, v.NotifyFix, v.Headers)
 		if err != nil {
 			return err
 		}
