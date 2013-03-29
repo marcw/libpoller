@@ -9,6 +9,7 @@ type Scheduler interface {
 	Schedule(check *Check)
 	Stop(key string)
 	StopAll()
+	Start()
 	Next() <-chan *Check
 }
 
@@ -69,7 +70,7 @@ func (s *SimpleScheduler) StopAll() {
 	}
 }
 
-func (s *SimpleScheduler) Run() {
+func (s *SimpleScheduler) Start() {
 	for {
 		check := <-s.toSchedule
 		go s.schedule(check, s.stopSignals[check.Key])
