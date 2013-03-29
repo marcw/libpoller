@@ -1,6 +1,6 @@
 # Poller
 
-A simple and composable HTTP monitoring application written in Go.
+A composable HTTP monitoring framework and application written in Go.
 
 It's very alpha for now, so please bear with it.
 
@@ -14,7 +14,7 @@ Once a check is done, the result is sent to one or many backends of your choice.
 Current supported backends are stdout, syslog,
 [librato](http://metrics.librato.com/) and [statsd](://github.com/etsy/statsd).
 
-## How to build/install it
+## How to build it
 
 Given you have a working go install, this command will produce the poller
 binary in `./bin/poller`
@@ -147,6 +147,10 @@ SMTP alerter is configured using these environment variables:
 - `SMTP_PLAIN_IDENTITY`: (optional)
 - `SMTP_RECIPIENT`: (required) ie: monitoring@example.org
 - `SMTP_FROM`: (required) ie: poller@example.org
+
+## Technical documentation
+
+Poller's documentation is available on godoc: [http://godoc.org/github.com/marcw/poller](http://godoc.org/github.com/marcw/poller)
 
 ## Why Go?
 
