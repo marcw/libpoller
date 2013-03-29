@@ -2,12 +2,11 @@ package poller
 
 import (
 	"encoding/json"
-	"github.com/marcw/poller/check"
 	"io/ioutil"
 	"net/http"
 )
 
-type CheckList map[string]*check.Check
+type CheckList map[string]*Check
 
 // A Store defines a place where configuration can be loaded/persisted.
 type Store interface {
@@ -36,8 +35,8 @@ func (ims *InMemoryStore) Persist(checks CheckList) error {
 }
 
 type Config struct {
-	checks    map[string]*check.Check
-	scheduler *check.Scheduler
+	checks    map[string]*Check
+	scheduler *Scheduler
 	store     Store
 }
 
@@ -54,7 +53,7 @@ type jsonCheck struct {
 
 type jsonChecks []jsonCheck
 
-func NewConfig(store Store, scheduler *check.Scheduler) *Config {
+func NewConfig(store Store, scheduler *Scheduler) *Config {
 	return &Config{checks: make(CheckList), scheduler: scheduler, store: store}
 }
 
@@ -141,7 +140,7 @@ func (c *Config) AddFromJSON(data []byte) error {
 	}
 
 	for _, v := range checks {
-		chk, err := check.NewCheck(v.Url, v.Key, v.Interval, v.Alert, v.AlertDelay, v.NotifyFix, v.Headers)
+		chk, err := NewCheck(v.Url, v.Key, v.Interval, v.Alert, v.AlertDelay, v.NotifyFix, v.Headers)
 		if err != nil {
 			return err
 		}
@@ -152,12 +151,12 @@ func (c *Config) AddFromJSON(data []byte) error {
 	return nil
 }
 
-func (c *Config) Add(chk *check.Check) {
+func (c *Config) Add(chk *Check) {
 	c.checks[chk.Key] = chk
 	c.scheduler.Add(chk)
 }
 
-func (c *Config) Get(key string) *check.Check {
+func (c *Config) Get(key string) *Check {
 	return c.checks[key]
 }
 

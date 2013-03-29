@@ -1,7 +1,7 @@
 package backend
 
 import (
-	"github.com/marcw/poller/check"
+	"github.com/marcw/poller"
 	"log"
 )
 
@@ -13,7 +13,7 @@ func NewStdoutBackend() *StdoutBackend {
 	return &StdoutBackend{}
 }
 
-func (s *StdoutBackend) Log(e *check.Event) {
+func (s *StdoutBackend) Log(e *poller.Event) {
 	log.Println(e.Check.Key, btos(e.IsUp()), e.Duration)
 }
 

@@ -1,9 +1,9 @@
 package poll
 
 import (
-	"github.com/marcw/poller/check"
+	"github.com/marcw/poller"
 )
 
 type Poller interface {
-	Poll(c *check.Check) *check.Event
+	Poll(c *poller.Check) *poller.Event
 }

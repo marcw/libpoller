@@ -1,7 +1,6 @@
 package poller
 
 import (
-	"github.com/marcw/poller/check"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +26,7 @@ func TestLoadBasicConfig(t *testing.T) {
         "Accept": "application/vnd.com.sensiolabs.connect+xml"
 }}]`
 
-	c := NewConfig(NewInMemoryStore(), check.NewScheduler())
+	c := NewConfig(NewInMemoryStore(), NewScheduler())
 	err := c.AddFromJSON([]byte(json))
 	if err != nil {
 		t.Log(err)
@@ -84,7 +83,7 @@ func TestLoadBasicConfig(t *testing.T) {
 }
 
 func TestServeHTTP(t *testing.T) {
-	s := NewConfig(NewInMemoryStore(), check.NewScheduler())
+	s := NewConfig(NewInMemoryStore(), NewScheduler())
 
 	server := httptest.NewServer(s)
 	defer server.Close()

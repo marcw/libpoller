@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/marcw/poller"
 	"github.com/marcw/poller/alert"
 	"github.com/marcw/poller/backend"
-	"github.com/marcw/poller/check"
 	"github.com/marcw/poller/poll"
 	"io/ioutil"
 	"log"

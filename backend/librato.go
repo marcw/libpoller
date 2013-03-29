@@ -2,7 +2,7 @@ package backend
 
 import (
 	"fmt"
-	"github.com/marcw/poller/check"
+	"github.com/marcw/poller"
 	"github.com/rcrowley/go-librato"
 	"os"
 	"time"
@@ -40,7 +40,7 @@ func NewLibratoBackend() (*LibratoBackend, error) {
 	return &LibratoBackend{metrics: metrics, prefix: prefix}, nil
 }
 
-func (l *LibratoBackend) Log(e *check.Event) {
+func (l *LibratoBackend) Log(e *poller.Event) {
 	d := l.metrics.GetGauge(l.prefix + e.Check.Key + ".duration")
 	d <- int64(e.Duration.Nanoseconds() / int64(time.Millisecond))
 
