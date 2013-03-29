@@ -13,8 +13,7 @@ type Scheduler interface {
 	Next() <-chan *Check
 }
 
-// Contains a collection of Check
-type SimpleScheduler struct {
+type simpleScheduler struct {
 	stopSignals map[string]chan int // collection of channels which are used to signal a goroutine to abandon ship immediately
 	toPoll      chan *Check         // checks which are due to polling
 	toSchedule  chan *Check         // checks which are due to scheduling
@@ -23,14 +22,14 @@ type SimpleScheduler struct {
 
 // Instantiates a SimpleScheduler which scheduling strategy's fairly basic.
 // For each scheduled check, a new time.Timer is created in its own goroutine.
-func NewSimpleScheduler() *SimpleScheduler {
-	return &SimpleScheduler{
+func NewSimpleScheduler() Scheduler {
+	return &simpleScheduler{
 		stopSignals: make(map[string]chan int),
 		toPoll:      make(chan *Check),
 		toSchedule:  make(chan *Check)}
 }
 
-func (s *SimpleScheduler) schedule(check *Check, deleteSignal <-chan int) {
+func (s *simpleScheduler) schedule(check *Check, deleteSignal <-chan int) {
 	timer := time.NewTimer(check.Interval)
 	select {
 	case <-timer.C:
@@ -40,7 +39,7 @@ func (s *SimpleScheduler) schedule(check *Check, deleteSignal <-chan int) {
 	}
 }
 
-func (s *SimpleScheduler) Schedule(check *Check) {
+func (s *simpleScheduler) Schedule(check *Check) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -48,20 +47,20 @@ func (s *SimpleScheduler) Schedule(check *Check) {
 	go s.schedule(check, s.stopSignals[check.Key])
 }
 
-func (s *SimpleScheduler) stop(key string) {
+func (s *simpleScheduler) stop(key string) {
 	s.stopSignals[key] <- 1
 	close(s.stopSignals[key])
 	delete(s.stopSignals, key)
 }
 
-func (s *SimpleScheduler) Stop(key string) {
+func (s *simpleScheduler) Stop(key string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.stop(key)
 }
 
-func (s *SimpleScheduler) StopAll() {
+func (s *simpleScheduler) StopAll() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -70,7 +69,7 @@ func (s *SimpleScheduler) StopAll() {
 	}
 }
 
-func (s *SimpleScheduler) Start() {
+func (s *simpleScheduler) Start() {
 	for {
 		check := <-s.toSchedule
 		go s.schedule(check, s.stopSignals[check.Key])
@@ -78,6 +77,6 @@ func (s *SimpleScheduler) Start() {
 	}
 }
 
-func (s *SimpleScheduler) Next() <-chan *Check {
+func (s *simpleScheduler) Next() <-chan *Check {
 	return s.toPoll
 }
