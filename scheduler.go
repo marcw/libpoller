@@ -5,68 +5,78 @@ import (
 	"time"
 )
 
+type Scheduler interface {
+	Schedule(check *Check)
+	Stop(key string)
+	StopAll()
+	Next() <-chan *Check
+}
+
 // Contains a collection of Check
-type Scheduler struct {
-	checks        map[string]*Check   // collection of checks
-	deleteSignals map[string]chan int // collection of channels which are used to signal a goroutine to abandon ship immediately
-	ToPoll        chan *Check         // checks which are due to polling
-	toSchedule    chan *Check         // checks which are due to scheduling
-	w             sync.Mutex
+type SimpleScheduler struct {
+	stopSignals map[string]chan int // collection of channels which are used to signal a goroutine to abandon ship immediately
+	toPoll      chan *Check         // checks which are due to polling
+	toSchedule  chan *Check         // checks which are due to scheduling
+	mu          sync.Mutex
 }
 
-func NewScheduler() *Scheduler {
-	return &Scheduler{
-		checks:        make(map[string]*Check),
-		deleteSignals: make(map[string]chan int),
-		ToPoll:        make(chan *Check),
-		toSchedule:    make(chan *Check)}
+// Instantiates a SimpleScheduler which scheduling strategy's fairly basic.
+// For each scheduled check, a new time.Timer is created in its own goroutine.
+func NewSimpleScheduler() *SimpleScheduler {
+	return &SimpleScheduler{
+		stopSignals: make(map[string]chan int),
+		toPoll:      make(chan *Check),
+		toSchedule:  make(chan *Check)}
 }
 
-func (s *Scheduler) runCheck(c *Check, deleteSignal <-chan int) {
-	timer := time.NewTimer(c.Interval)
+func (s *SimpleScheduler) schedule(check *Check, deleteSignal <-chan int) {
+	timer := time.NewTimer(check.Interval)
 	select {
 	case <-timer.C:
-		s.toSchedule <- c
+		s.toSchedule <- check
 	case <-deleteSignal:
 		break
 	}
 }
 
-func (s *Scheduler) Add(c *Check) {
-	s.w.Lock()
-	defer s.w.Unlock()
+func (s *SimpleScheduler) Schedule(check *Check) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	s.checks[c.Key] = c
-	s.deleteSignals[c.Key] = make(chan int)
-	go s.runCheck(c, s.deleteSignals[c.Key])
+	s.stopSignals[check.Key] = make(chan int)
+	go s.schedule(check, s.stopSignals[check.Key])
 }
 
-func (s *Scheduler) Delete(key string) {
-	s.w.Lock()
-	defer s.w.Unlock()
-
-	s.del(key)
+func (s *SimpleScheduler) stop(key string) {
+	s.stopSignals[key] <- 1
+	close(s.stopSignals[key])
+	delete(s.stopSignals, key)
 }
 
-func (s *Scheduler) del(key string) {
-	s.deleteSignals[key] <- 0
-	delete(s.checks, key)
-	delete(s.deleteSignals, key)
+func (s *SimpleScheduler) Stop(key string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.stop(key)
 }
 
-func (s *Scheduler) Wipe() {
-	s.w.Lock()
-	defer s.w.Unlock()
+func (s *SimpleScheduler) StopAll() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	for k := range s.checks {
-		s.del(k)
+	for k := range s.stopSignals {
+		s.stop(k)
 	}
 }
 
-func (s *Scheduler) Run() {
+func (s *SimpleScheduler) Run() {
 	for {
 		check := <-s.toSchedule
-		go s.runCheck(check, s.deleteSignals[check.Key])
-		s.ToPoll <- check
+		go s.schedule(check, s.stopSignals[check.Key])
+		s.toPoll <- check
 	}
+}
+
+func (s *SimpleScheduler) Next() <-chan *Check {
+	return s.toPoll
 }
