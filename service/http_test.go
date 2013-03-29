@@ -1,4 +1,4 @@
-package poll
+package service
 
 import (
 	"github.com/marcw/poller"

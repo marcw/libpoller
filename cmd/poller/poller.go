@@ -49,7 +49,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	pollerPool := poll.NewHttpPoller(*userAgent, *timeout)
+	pollerPool := service.NewHttpPoller(*userAgent, *timeout)
 	poller := poller.NewDirectPoller()
 
 	go httpInput(config)
