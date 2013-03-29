@@ -2,9 +2,7 @@ package poll
 
 import (
 	"github.com/marcw/poller/check"
-	//"net"
 	"net/http"
-	//"net/http/httputil"
 	"time"
 )
 
