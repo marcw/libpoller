@@ -1,10 +1,8 @@
 package poll
 
 import (
-	"github.com/marcw/poller/check"
-	//"net"
+	"github.com/marcw/poller"
 	"net/http"
-	//"net/http/httputil"
 	"time"
 )
 
@@ -17,13 +15,13 @@ func NewHttpPoller(ua string, timeout time.Duration) *HttpPoller {
 	return &HttpPoller{UserAgent: ua, Timeout: timeout}
 }
 
-func (p *HttpPoller) Poll(c *check.Check) *check.Event {
-	event := check.NewEvent(c)
+func (p *HttpPoller) Poll(c *poller.Check) *poller.Event {
+	event := poller.NewEvent(c)
 	timer := time.NewTimer(p.Timeout)
-	ch := make(chan *check.Event, 1)
+	ch := make(chan *poller.Event, 1)
 
 	start := time.Now().UnixNano()
-	go func(e *check.Event, eventCh chan<- *check.Event) {
+	go func(e *poller.Event, eventCh chan<- *poller.Event) {
 		client := &http.Client{Jar: nil}
 		req, err := http.NewRequest("GET", c.Url.String(), nil)
 		req.Header = c.Header

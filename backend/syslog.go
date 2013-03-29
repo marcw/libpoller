@@ -2,7 +2,7 @@ package backend
 
 import (
 	"fmt"
-	"github.com/marcw/poller/check"
+	"github.com/marcw/poller"
 	"log/syslog"
 	"os"
 )
@@ -32,7 +32,7 @@ func NewSyslogBackend() (*SyslogBackend, error) {
 	return &SyslogBackend{writer: writer}, nil
 }
 
-func (s *SyslogBackend) Log(e *check.Event) {
+func (s *SyslogBackend) Log(e *poller.Event) {
 	if e.IsUp() {
 		s.writer.Info(fmt.Sprintln(e.Check.Key, btos(e.IsUp()), e.Duration))
 	} else {

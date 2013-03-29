@@ -2,7 +2,7 @@ package backend
 
 import (
 	"fmt"
-	"github.com/marcw/poller/check"
+	"github.com/marcw/poller"
 	"github.com/peterbourgon/g2s"
 	"os"
 )
@@ -49,7 +49,7 @@ func NewStatsdBackend() (*StatsdBackend, error) {
 	return &StatsdBackend{statsd: statsd, prefix: envPrefix}, nil
 }
 
-func (s *StatsdBackend) Log(e *check.Event) {
+func (s *StatsdBackend) Log(e *poller.Event) {
 	s.statsd.Timing(1.0, s.prefix+e.Check.Key+".duration", e.Duration)
 	s.statsd.Counter(1.0, s.prefix+e.Check.Key+".up", int(btou(e.IsUp())))
 }

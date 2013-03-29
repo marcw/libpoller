@@ -1,4 +1,4 @@
-package check
+package poller
 
 import (
 	"net"
@@ -22,19 +22,6 @@ type Check struct {
 	NotifyFix  bool          // Notify if service is back up
 	AlertDelay time.Duration // Delay before raising an alert (zero value = NOW)
 }
-
-// Used for marshalling / unmarshalling
-type jsonCheck struct {
-	Url        string
-	Key        string
-	Interval   string
-	Alert      bool
-	AlertDelay string
-	NotifyFix  bool
-	Headers    map[string]string
-}
-
-type jsonChecks []jsonCheck
 
 func NewCheck(checkUrl, key, interval string, alert bool, alertDelay string, notifyFix bool, headers map[string]string) (*Check, error) {
 	d, err := time.ParseDuration(interval)
@@ -98,4 +85,3 @@ func (c *Check) ShouldNotifyFix() bool {
 
 	return false
 }
-

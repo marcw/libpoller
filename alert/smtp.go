@@ -3,7 +3,7 @@ package alert
 import (
 	"fmt"
 	"github.com/marcw/ezmail"
-	"github.com/marcw/poller/check"
+	"github.com/marcw/poller"
 	"net"
 	"net/smtp"
 	"os"
@@ -66,7 +66,7 @@ func NewSmtpAlerter() (*SmtpAlerter, error) {
 	return smtp, nil
 }
 
-func (m SmtpAlerter) Alert(event *check.Event) {
+func (m SmtpAlerter) Alert(event *poller.Event) {
 	msg := m.message
 	msg.Subject = fmt.Sprintf("[ALERT] %s is down", event.Check.Url.String())
 	msg.Body = fmt.Sprintf("Poller alert: %s (%s) is down since %s", event.Check.Key, event.Check.Url.String(), event.Check.DownSince.Format(time.RFC822))

@@ -1,11 +1,11 @@
 package backend
 
 import (
-	"github.com/marcw/poller/check"
+	"github.com/marcw/poller"
 )
 
 type Backend interface {
-	Log(e *check.Event)
+	Log(e *poller.Event)
 	Close()
 }
 
@@ -15,7 +15,7 @@ func (p Pool) Add(b Backend) {
 	p[b] = true
 }
 
-func (p Pool) Log(event *check.Event) {
+func (p Pool) Log(event *poller.Event) {
 	for k, _ := range p {
 		k.Log(event)
 	}
