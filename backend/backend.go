@@ -4,14 +4,9 @@ import (
 	"github.com/marcw/poller"
 )
 
-type Backend interface {
-	Log(e *poller.Event)
-	Close()
-}
+type Pool map[poller.Backend]bool
 
-type Pool map[Backend]bool
-
-func (p Pool) Add(b Backend) {
+func (p Pool) Add(b poller.Backend) {
 	p[b] = true
 }
 

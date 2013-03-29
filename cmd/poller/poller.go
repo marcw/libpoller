@@ -6,7 +6,7 @@ import (
 	"github.com/marcw/poller"
 	"github.com/marcw/poller/alert"
 	"github.com/marcw/poller/backend"
-	"github.com/marcw/poller/poll"
+	"github.com/marcw/poller/service"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -50,20 +50,10 @@ func main() {
 	}
 
 	pollerPool := poll.NewHttpPoller(*userAgent, *timeout)
+	poller := poller.NewDirectPoller()
 
 	go httpInput(config)
-	go func(toPoll <-chan *poller.Check, bp *backend.Pool, pp poll.Poller, ap *alert.Pool) {
-		for {
-			toPollCheck := <-toPoll
-			go func(c *poller.Check, b *backend.Pool, p poll.Poller, a *alert.Pool) {
-				event := p.Poll(c)
-				b.Log(event)
-				if event.Check.ShouldAlert() {
-					a.Alert(event)
-				}
-			}(toPollCheck, bp, pp, ap)
-		}
-	}(config.Scheduler().Next(), backendPool, pollerPool, alerterPool)
+	go poller.Run(config.Scheduler(), backendPool, pollerPool, alerterPool)
 	go config.Scheduler().Start()
 
 	select {}

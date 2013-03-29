@@ -4,13 +4,9 @@ import (
 	"github.com/marcw/poller"
 )
 
-type Alerter interface {
-	Alert(event *poller.Event)
-}
+type Pool map[poller.Alerter]bool
 
-type Pool map[Alerter]bool
-
-func (p Pool) Add(a Alerter) {
+func (p Pool) Add(a poller.Alerter) {
 	p[a] = true
 }
 
