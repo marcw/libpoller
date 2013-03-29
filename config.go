@@ -52,3 +52,7 @@ func (c *Config) SetCheckList(cl *CheckList) {
 		c.scheduler.Schedule(check)
 	})
 }
+
+func (c *Config) Scheduler() Scheduler {
+	return c.scheduler
+}
