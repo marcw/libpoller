@@ -7,7 +7,6 @@ import (
 	"github.com/marcw/poller/alert"
 	"github.com/marcw/poller/backend"
 	"github.com/marcw/poller/poll"
-	"io/ioutil"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -29,11 +28,16 @@ func init() {
 }
 
 func main() {
-	scheduler := check.NewScheduler()
+	var store poller.Store
+
 	if *configFile != "" {
-		if err := loadChecksFromFile(scheduler); err != nil {
-			log.Fatalln(err)
-		}
+		store = poller.NewFileStore(*configFile)
+	} else {
+		store = poller.NewInMemoryStore()
+	}
+	config := poller.NewConfig(store, poller.NewSimpleScheduler())
+	if err := config.Load(); err != nil {
+		log.Fatalln(err)
 	}
 
 	backendPool, err := instanciateBackendPool()
@@ -47,11 +51,11 @@ func main() {
 
 	pollerPool := poll.NewHttpPoller(*userAgent, *timeout)
 
-	go httpInput(scheduler)
-	go func(toPoll <-chan *check.Check, bp *backend.Pool, pp poll.Poller, ap *alert.Pool) {
+	go httpInput(config)
+	go func(toPoll <-chan *poller.Check, bp *backend.Pool, pp poll.Poller, ap *alert.Pool) {
 		for {
 			toPollCheck := <-toPoll
-			go func(c *check.Check, b *backend.Pool, p poll.Poller, a *alert.Pool) {
+			go func(c *poller.Check, b *backend.Pool, p poll.Poller, a *alert.Pool) {
 				event := p.Poll(c)
 				b.Log(event)
 				if event.Check.ShouldAlert() {
@@ -59,23 +63,10 @@ func main() {
 				}
 			}(toPollCheck, bp, pp, ap)
 		}
-	}(scheduler.ToPoll, backendPool, pollerPool, alerterPool)
-	go scheduler.Run()
+	}(config.Scheduler().Next(), backendPool, pollerPool, alerterPool)
+	go config.Scheduler().Start()
 
 	select {}
-}
-
-func loadChecksFromFile(s *check.Scheduler) error {
-	buffer, err := ioutil.ReadFile(*configFile)
-	if err != nil {
-		return err
-	}
-
-	if err := s.AddFromJSON(buffer); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func instanciateBackendPool() (*backend.Pool, error) {
@@ -128,9 +119,9 @@ func instanciateAlerterPool() (*alert.Pool, error) {
 	return &pool, nil
 }
 
-func httpInput(s *check.Scheduler) {
+func httpInput(config *poller.Config) {
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {})
-	http.Handle("/checks", s)
+	http.Handle("/checks", poller.NewConfigHttpHandler(config))
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
 		log.Fatalln(err)
 	}
