@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-type HttpPoller struct {
+type httpPoller struct {
 	UserAgent string
 	Timeout   time.Duration
 }
 
-func NewHttpPoller(ua string, timeout time.Duration) *HttpPoller {
-	return &HttpPoller{UserAgent: ua, Timeout: timeout}
+func NewHttpPoller(ua string, timeout time.Duration) poller.Service {
+	return &httpPoller{UserAgent: ua, Timeout: timeout}
 }
 
-func (p *HttpPoller) Poll(c *poller.Check) *poller.Event {
+func (p *httpPoller) Poll(c *poller.Check) *poller.Event {
 	event := poller.NewEvent(c)
 	timer := time.NewTimer(p.Timeout)
 	ch := make(chan *poller.Event, 1)

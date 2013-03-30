@@ -8,7 +8,7 @@ import (
 )
 
 // Backend for Statsd
-type StatsdBackend struct {
+type statsdBackend struct {
 	statsd g2s.Statter
 	prefix string
 }
@@ -19,7 +19,7 @@ type StatsdBackend struct {
 //   STATSD_PORT env variable (defaults to 8125)
 //   STATSD_PROTOCOL env variable (defaults to udp)
 //   STATSD_PREFIX env variable (defaults to `poller.checks.`)
-func NewStatsdBackend() (*StatsdBackend, error) {
+func NewStatsdBackend() (poller.Backend, error) {
 	envHost := os.Getenv("STATSD_HOST")
 	envPort := os.Getenv("STATSD_PORT")
 	envProtocol := os.Getenv("STATSD_PROTOCOL")
@@ -46,14 +46,14 @@ func NewStatsdBackend() (*StatsdBackend, error) {
 		return nil, err
 	}
 
-	return &StatsdBackend{statsd: statsd, prefix: envPrefix}, nil
+	return &statsdBackend{statsd: statsd, prefix: envPrefix}, nil
 }
 
-func (s *StatsdBackend) Log(e *poller.Event) {
+func (s *statsdBackend) Log(e *poller.Event) {
 	s.statsd.Timing(1.0, s.prefix+e.Check.Key+".duration", e.Duration)
 	s.statsd.Counter(1.0, s.prefix+e.Check.Key+".up", int(btou(e.IsUp())))
 }
 
-func (s *StatsdBackend) Close() {
+func (s *statsdBackend) Close() {
 	// NO OP
 }

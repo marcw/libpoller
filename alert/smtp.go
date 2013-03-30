@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-type SmtpAlerter struct {
+type smtpAlerter struct {
 	addr    string
 	auth    smtp.Auth
 	message ezmail.Message
 }
 
-func NewSmtpAlerter() (*SmtpAlerter, error) {
+func NewSmtpAlerter() (poller.Alerter, error) {
 	envHost := os.Getenv("SMTP_HOST")
 	envPort := os.Getenv("SMTP_PORT")
 	envAuth := os.Getenv("SMTP_AUTH")
@@ -58,7 +58,7 @@ func NewSmtpAlerter() (*SmtpAlerter, error) {
 		message.AddTo("", v)
 	}
 
-	smtp := &SmtpAlerter{
+	smtp := &smtpAlerter{
 		addr:    addr,
 		auth:    auth,
 		message: *message}
@@ -66,7 +66,7 @@ func NewSmtpAlerter() (*SmtpAlerter, error) {
 	return smtp, nil
 }
 
-func (m SmtpAlerter) Alert(event *poller.Event) {
+func (m smtpAlerter) Alert(event *poller.Event) {
 	msg := m.message
 	msg.Subject = fmt.Sprintf("[ALERT] %s is down", event.Check.Url.String())
 	msg.Body = fmt.Sprintf("Poller alert: %s (%s) is down since %s", event.Check.Key, event.Check.Url.String(), event.Check.DownSince.Format(time.RFC822))

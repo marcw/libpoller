@@ -6,17 +6,17 @@ import (
 )
 
 // StdoutBackend logs result to Stdout
-type StdoutBackend struct {
+type stdoutBackend struct {
 }
 
-func NewStdoutBackend() *StdoutBackend {
-	return &StdoutBackend{}
+func NewStdoutBackend() poller.Backend {
+	return &stdoutBackend{}
 }
 
-func (s *StdoutBackend) Log(e *poller.Event) {
+func (s *stdoutBackend) Log(e *poller.Event) {
 	log.Println(e.Check.Key, btos(e.IsUp()), e.Duration)
 }
 
-func (s *StdoutBackend) Close() {
+func (s *stdoutBackend) Close() {
 	// NO OP
 }

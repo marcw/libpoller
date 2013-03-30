@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-type LibratoBackend struct {
+type libratoBackend struct {
 	metrics librato.Metrics
 	prefix  string
 }
 
-func NewLibratoBackend() (*LibratoBackend, error) {
+func NewLibratoBackend() (poller.Backend, error) {
 	user := os.Getenv("LIBRATO_USER")
 	token := os.Getenv("LIBRATO_TOKEN")
 	source := os.Getenv("LIBRATO_SOURCE")
@@ -37,10 +37,10 @@ func NewLibratoBackend() (*LibratoBackend, error) {
 
 	metrics := librato.NewSimpleMetrics(user, token, source)
 
-	return &LibratoBackend{metrics: metrics, prefix: prefix}, nil
+	return &libratoBackend{metrics: metrics, prefix: prefix}, nil
 }
 
-func (l *LibratoBackend) Log(e *poller.Event) {
+func (l *libratoBackend) Log(e *poller.Event) {
 	d := l.metrics.GetGauge(l.prefix + e.Check.Key + ".duration")
 	d <- int64(e.Duration.Nanoseconds() / int64(time.Millisecond))
 
@@ -48,7 +48,7 @@ func (l *LibratoBackend) Log(e *poller.Event) {
 	c <- btou(e.IsUp())
 }
 
-func (l *LibratoBackend) Close() {
+func (l *libratoBackend) Close() {
 	l.metrics.Close()
 	l.metrics.Wait()
 }
