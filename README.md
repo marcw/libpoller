@@ -66,7 +66,40 @@ is good!
 ## How to receive alerts when a check is down?
 
 Alerting and alerting delay is customisable for each check (Please read the example configuration).
-"Alerters" are enabled from the command line. Please run `poller --help`.
+"Alerters" are enabled from the command line with the `--alerts` flag. 
+
+    # Enable the smtp alerter
+    ./poller --alerts="smtp"
+
+    # Enable both the pagerduty and smtp alerter
+    ./poller --alerts="smtp,pagerduty"
+
+### SMTP Alerter
+
+The SMTP Alerter is enabled when you run poller like this:
+
+    ./poller --alerts="smtp"
+
+SMTP alerter is configured using these environment variables:
+
+- `SMTP_HOST`: (required) ie: localhost
+- `SMTP_PORT`: (required) ie: 25
+- `SMTP_AUTH`: (optional) "MD5" or "PLAIN"
+- `SMTP_USERNAME`: (optional)
+- `SMTP_PASSWORD`: (optional)
+- `SMTP_PLAIN_IDENTITY`: (optional)
+- `SMTP_RECIPIENT`: (required) ie: monitoring@example.org
+- `SMTP_FROM`: (required) ie: poller@example.org
+
+#### PagerDuty Alerter
+
+The PagerDuty alerter is enabled when you run poller like this:
+
+    ./poller --alerts="pagerduty"
+
+[PagerDuty](http://www.pagerduty.com/)'s alerter is configured using these environment variables: 
+
+- `PAGERDUTY_SERVICE_KEY`: (required) PagerDuty's Service Key. [Please read the Getting started section](http://developer.pagerduty.com/documentation/integration/events).
 
 ## How to add checks while poller is running
 
@@ -74,11 +107,16 @@ Poller supports live configuration changes thanks to the `/checks` http endpoint
 Send a `PUT` request with a valid config JSON in the body of the request and poller
 will append the checks to its list.
 
-
 ### Backends configuration
 
 Here is a list of supported backend and how to configure them with environment
-variables. 
+variables. Backends are enabled from the command-line thanks to the `--backend` flag.
+
+    # Enable the stdout backend
+    ./poller --backends="stdout"
+
+    # Enable both the librato and stdout backend
+    ./poller --backends="librato,stdout"
 
 #### Librato
 
@@ -105,7 +143,6 @@ Output will look like this:
     2012/01/24 11:35:16 com_google UP 345.271ms
     2012/01/24 11:35:17 fr_yahoo DOWN 1.518175s
     2012/01/24 11:35:17 fr_yahoo ALERT Down since 2006-01-02 15:04:05.999999999 -0700 MST
-
 
 #### Statsd
 
@@ -135,18 +172,6 @@ Output formatting is the same as the stdout backend.
 
 ## Alerters configuration
 
-### SMTP
-
-SMTP alerter is configured using these environment variables:
-
-- `SMTP_HOST`: (required) ie: localhost
-- `SMTP_PORT`: (required) ie: 25
-- `SMTP_AUTH`: (optional) "MD5" or "PLAIN"
-- `SMTP_USERNAME`: (optional)
-- `SMTP_PASSWORD`: (optional)
-- `SMTP_PLAIN_IDENTITY`: (optional)
-- `SMTP_RECIPIENT`: (required) ie: monitoring@example.org
-- `SMTP_FROM`: (required) ie: poller@example.org
 
 ## Technical documentation
 
