@@ -100,7 +100,14 @@ func instanciateAlerterPool() (*alert.Pool, error) {
 		case v == "smtp":
 			smtp, err := alert.NewSmtpAlerter()
 			if err != nil {
-				return nil, fmt.Errorf("Impossible to instanciate the smtp backend: %s", err)
+				return nil, fmt.Errorf("Impossible to instanciate the smtp alerter: %s", err)
+			}
+			pool.Add(smtp)
+			break
+		case v == "pagerduty":
+			smtp, err := alert.NewPagerDutyAlerter()
+			if err != nil {
+				return nil, fmt.Errorf("Impossible to instanciate the pagerduty alerter: %s", err)
 			}
 			pool.Add(smtp)
 		}
