@@ -3,11 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	log "github.com/marcw/gogol"
 	"github.com/marcw/poller"
-	"github.com/marcw/poller/alert"
-	"github.com/marcw/poller/backend"
-	"github.com/marcw/poller/service"
-	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"strings"
@@ -22,6 +19,9 @@ var (
 	backends   = flag.String("backends", "stdout", "Backends to enable. Comma separated.")
 	alerts     = flag.String("alerts", "", "Alerts to enable. Comma separated. ie: \"smtp\"")
 )
+
+type alertPool map[poller.Alerter]bool
+type backendPool map[poller.Backend]bool
 
 func init() {
 	flag.Parse()
@@ -49,7 +49,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	pollerPool := service.NewHttpPoller(*userAgent, *timeout)
+	pollerPool := poller.NewHttpPoller(*userAgent, *timeout)
 	poller := poller.NewDirectPoller()
 
 	go httpInput(config)
@@ -59,57 +59,57 @@ func main() {
 	select {}
 }
 
-func instanciateBackendPool() (*backend.Pool, error) {
-	pool := make(backend.Pool)
+func instanciateBackendPool() (*backendPool, error) {
+	pool := make(backendPool)
 	for _, v := range strings.Split(*backends, ",") {
 		switch {
 		case v == "statsd":
-			statsd, err := backend.NewStatsdBackend()
+			statsd, err := poller.NewStatsdBackend()
 			if err != nil {
 				return nil, fmt.Errorf("Impossible to instanciate the Statsd backend: %s", err)
 			}
-			pool.Add(statsd)
+			pool[statsd] = true
 
 		case v == "stdout":
-			stdout := backend.NewStdoutBackend()
-			pool.Add(stdout)
+			stdout := poller.NewStdoutBackend()
+			pool[stdout] = true
 
 		case v == "librato":
-			librato, err := backend.NewLibratoBackend()
+			librato, err := poller.NewLibratoBackend()
 			if err != nil {
 				return nil, fmt.Errorf("Impossible to instanciate the Librato backend: %s", err)
 			}
-			pool.Add(librato)
+			pool[librato] = true
 
 		case v == "syslog":
-			syslog, err := backend.NewSyslogBackend()
+			syslog, err := poller.NewSyslogBackend()
 			if err != nil {
 				return nil, fmt.Errorf("Impossible to instanciate the syslog backend: %s", err)
 			}
-			pool.Add(syslog)
+			pool[syslog] = true
 		}
 	}
 
 	return &pool, nil
 }
 
-func instanciateAlerterPool() (*alert.Pool, error) {
-	pool := make(alert.Pool)
+func instanciateAlerterPool() (*alertPool, error) {
+	pool := make(alertPool)
 	for _, v := range strings.Split(*alerts, ",") {
 		switch {
 		case v == "smtp":
-			smtp, err := alert.NewSmtpAlerter()
+			smtp, err := poller.NewSmtpAlerter()
 			if err != nil {
 				return nil, fmt.Errorf("Impossible to instanciate the smtp alerter: %s", err)
 			}
-			pool.Add(smtp)
+			pool[smtp] = true
 			break
 		case v == "pagerduty":
-			smtp, err := alert.NewPagerDutyAlerter()
+			smtp, err := poller.NewPagerDutyAlerter()
 			if err != nil {
 				return nil, fmt.Errorf("Impossible to instanciate the pagerduty alerter: %s", err)
 			}
-			pool.Add(smtp)
+			pool[smtp] = true
 		}
 	}
 
@@ -121,5 +121,23 @@ func httpInput(config *poller.Config) {
 	http.Handle("/checks", poller.NewConfigHttpHandler(config))
 	if err := http.ListenAndServe(*httpAddr, nil); err != nil {
 		log.Fatalln(err)
+	}
+}
+
+func (p backendPool) Log(event *poller.Event) {
+	for k, _ := range p {
+		k.Log(event)
+	}
+}
+
+func (p backendPool) Close() {
+	for k, _ := range p {
+		k.Close()
+	}
+}
+
+func (p alertPool) Alert(event *poller.Event) {
+	for k := range p {
+		k.Alert(event)
 	}
 }

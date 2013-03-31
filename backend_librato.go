@@ -1,8 +1,7 @@
-package backend
+package poller
 
 import (
 	"fmt"
-	"github.com/marcw/poller"
 	"github.com/rcrowley/go-librato"
 	"os"
 	"time"
@@ -13,7 +12,7 @@ type libratoBackend struct {
 	prefix  string
 }
 
-func NewLibratoBackend() (poller.Backend, error) {
+func NewLibratoBackend() (Backend, error) {
 	user := os.Getenv("LIBRATO_USER")
 	token := os.Getenv("LIBRATO_TOKEN")
 	source := os.Getenv("LIBRATO_SOURCE")
@@ -32,7 +31,7 @@ func NewLibratoBackend() (poller.Backend, error) {
 	}
 
 	if prefix == "" {
-		prefix = "poller.checks."
+		prefix = "checks."
 	}
 
 	metrics := librato.NewSimpleMetrics(user, token, source)
@@ -40,7 +39,7 @@ func NewLibratoBackend() (poller.Backend, error) {
 	return &libratoBackend{metrics: metrics, prefix: prefix}, nil
 }
 
-func (l *libratoBackend) Log(e *poller.Event) {
+func (l *libratoBackend) Log(e *Event) {
 	d := l.metrics.GetGauge(l.prefix + e.Check.Key + ".duration")
 	d <- int64(e.Duration.Nanoseconds() / int64(time.Millisecond))
 

@@ -1,7 +1,6 @@
-package service
+package poller
 
 import (
-	"github.com/marcw/poller"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -32,7 +31,7 @@ func TestSuccessfullPoll(t *testing.T) {
 
 	poll := NewHttpPoller("foobar", 10*time.Second)
 
-	c, _ := poller.NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
+	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
 	event := poll.Poll(c)
 	if event.StatusCode != 200 {
 		t.Error("statusCode should be 200")
@@ -51,7 +50,7 @@ func TestFailedPoll(t *testing.T) {
 
 	poll := NewHttpPoller("foobar", 10*time.Second)
 
-	c, _ := poller.NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
+	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
 	event := poll.Poll(c)
 	if event.StatusCode != 500 {
 		t.Error("statusCode should be 500")
@@ -67,7 +66,7 @@ func TestTimeoutedPoll(t *testing.T) {
 
 	poll := NewHttpPoller("foobar", 100*time.Millisecond)
 
-	c, _ := poller.NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
+	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
 	event := poll.Poll(c)
 	if event.StatusCode != 0 {
 		t.Error("statusCode should be 0")

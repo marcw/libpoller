@@ -1,7 +1,6 @@
-package backend
+package poller
 
 import (
-	"github.com/marcw/poller"
 	"log"
 )
 
@@ -9,11 +8,11 @@ import (
 type stdoutBackend struct {
 }
 
-func NewStdoutBackend() poller.Backend {
+func NewStdoutBackend() Backend {
 	return &stdoutBackend{}
 }
 
-func (s *stdoutBackend) Log(e *poller.Event) {
+func (s *stdoutBackend) Log(e *Event) {
 	log.Println(e.Check.Key, btos(e.IsUp()), e.Duration)
 }
 

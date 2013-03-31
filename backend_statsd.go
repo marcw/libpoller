@@ -1,8 +1,7 @@
-package backend
+package poller
 
 import (
 	"fmt"
-	"github.com/marcw/poller"
 	"github.com/peterbourgon/g2s"
 	"os"
 )
@@ -18,8 +17,8 @@ type statsdBackend struct {
 //   STATSD_HOST env variable
 //   STATSD_PORT env variable (defaults to 8125)
 //   STATSD_PROTOCOL env variable (defaults to udp)
-//   STATSD_PREFIX env variable (defaults to `poller.checks.`)
-func NewStatsdBackend() (poller.Backend, error) {
+//   STATSD_PREFIX env variable (defaults to `checks.`)
+func NewStatsdBackend() (Backend, error) {
 	envHost := os.Getenv("STATSD_HOST")
 	envPort := os.Getenv("STATSD_PORT")
 	envProtocol := os.Getenv("STATSD_PROTOCOL")
@@ -38,7 +37,7 @@ func NewStatsdBackend() (poller.Backend, error) {
 	}
 
 	if envPrefix == "" {
-		envPrefix = "poller.checks."
+		envPrefix = "checks."
 	}
 
 	statsd, err := g2s.Dial(envProtocol, envHost+":"+envPort)
@@ -49,7 +48,7 @@ func NewStatsdBackend() (poller.Backend, error) {
 	return &statsdBackend{statsd: statsd, prefix: envPrefix}, nil
 }
 
-func (s *statsdBackend) Log(e *poller.Event) {
+func (s *statsdBackend) Log(e *Event) {
 	s.statsd.Timing(1.0, s.prefix+e.Check.Key+".duration", e.Duration)
 	s.statsd.Counter(1.0, s.prefix+e.Check.Key+".up", int(btou(e.IsUp())))
 }

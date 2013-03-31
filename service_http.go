@@ -1,7 +1,6 @@
-package service
+package poller
 
 import (
-	"github.com/marcw/poller"
 	"net/http"
 	"time"
 )
@@ -11,17 +10,17 @@ type httpPoller struct {
 	Timeout   time.Duration
 }
 
-func NewHttpPoller(ua string, timeout time.Duration) poller.Service {
+func NewHttpPoller(ua string, timeout time.Duration) Service {
 	return &httpPoller{UserAgent: ua, Timeout: timeout}
 }
 
-func (p *httpPoller) Poll(c *poller.Check) *poller.Event {
-	event := poller.NewEvent(c)
+func (p *httpPoller) Poll(c *Check) *Event {
+	event := NewEvent(c)
 	timer := time.NewTimer(p.Timeout)
-	ch := make(chan *poller.Event, 1)
+	ch := make(chan *Event, 1)
 
 	start := time.Now().UnixNano()
-	go func(e *poller.Event, eventCh chan<- *poller.Event) {
+	go func(e *Event, eventCh chan<- *Event) {
 		client := &http.Client{Jar: nil}
 		req, err := http.NewRequest("GET", c.Url.String(), nil)
 		req.Header = c.Header
