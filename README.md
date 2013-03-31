@@ -170,9 +170,6 @@ the syslog backend.
 
 Output formatting is the same as the stdout backend.
 
-## Alerters configuration
-
-
 ## Technical documentation
 
 Poller's documentation is available on godoc: [http://godoc.org/github.com/marcw/poller](http://godoc.org/github.com/marcw/poller)
