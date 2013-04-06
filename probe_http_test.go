@@ -7,32 +7,32 @@ import (
 	"time"
 )
 
-type successPollHandler struct {
+type successTestHandler struct {
 }
-type errorPollHandler struct {
+type errorTestHandler struct {
 }
-type timeoutPollHandler struct {
-}
-
-func (p successPollHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+type timeoutTestHandler struct {
 }
 
-func (p errorPollHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (p successTestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+}
+
+func (p errorTestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "error", 500)
 }
 
-func (p timeoutPollHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (p timeoutTestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	time.Sleep(200 * time.Millisecond)
 }
 
-func TestSuccessfullPoll(t *testing.T) {
-	server := httptest.NewServer(successPollHandler{})
+func TestSuccessfullTest(t *testing.T) {
+	server := httptest.NewServer(successTestHandler{})
 	defer server.Close()
 
-	poll := NewHttpPoller("foobar", 10*time.Second)
+	probe := NewHttpProbe("foobar", 10*time.Second)
 
 	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
-	event := poll.Poll(c)
+	event := probe.Test(c)
 	if event.StatusCode != 200 {
 		t.Error("statusCode should be 200")
 	}
@@ -44,14 +44,14 @@ func TestSuccessfullPoll(t *testing.T) {
 	}
 }
 
-func TestFailedPoll(t *testing.T) {
-	server := httptest.NewServer(errorPollHandler{})
+func TestFailedTest(t *testing.T) {
+	server := httptest.NewServer(errorTestHandler{})
 	defer server.Close()
 
-	poll := NewHttpPoller("foobar", 10*time.Second)
+	probe := NewHttpProbe("foobar", 10*time.Second)
 
 	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
-	event := poll.Poll(c)
+	event := probe.Test(c)
 	if event.StatusCode != 500 {
 		t.Error("statusCode should be 500")
 	}
@@ -60,14 +60,14 @@ func TestFailedPoll(t *testing.T) {
 	}
 }
 
-func TestTimeoutedPoll(t *testing.T) {
-	server := httptest.NewServer(timeoutPollHandler{})
+func TestTimeoutedTest(t *testing.T) {
+	server := httptest.NewServer(timeoutTestHandler{})
 	defer server.Close()
 
-	poll := NewHttpPoller("foobar", 100*time.Millisecond)
+	probe := NewHttpProbe("foobar", 100*time.Millisecond)
 
 	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
-	event := poll.Poll(c)
+	event := probe.Test(c)
 	if event.StatusCode != 0 {
 		t.Error("statusCode should be 0")
 	}

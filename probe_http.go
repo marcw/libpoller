@@ -5,16 +5,16 @@ import (
 	"time"
 )
 
-type httpPoller struct {
+type httpProbe struct {
 	UserAgent string
 	Timeout   time.Duration
 }
 
-func NewHttpPoller(ua string, timeout time.Duration) Service {
-	return &httpPoller{UserAgent: ua, Timeout: timeout}
+func NewHttpProbe(ua string, timeout time.Duration) Probe {
+	return &httpProbe{UserAgent: ua, Timeout: timeout}
 }
 
-func (p *httpPoller) Poll(c *Check) *Event {
+func (p *httpProbe) Test(c *Check) *Event {
 	event := NewEvent(c)
 	timer := time.NewTimer(p.Timeout)
 	ch := make(chan *Event, 1)

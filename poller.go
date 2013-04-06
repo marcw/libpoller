@@ -14,14 +14,14 @@ type Backend interface {
 	Close()
 }
 
-// A Poller is the glue between a Scheduler, a Backend, a Service and a Alerter. 
+// A Poller is the glue between a Scheduler, a Backend, a Probe and a Alerter. 
 type Poller interface {
-	Run(Scheduler, Backend, Service, Alerter)
+	Run(Scheduler, Backend, Probe, Alerter)
 }
 
-// A Service is a specialized way to poll a check. ie: a HttpService will specialize in polling HTTP resources.
-type Service interface {
-	Poll(c *Check) *Event
+// A Probe is a specialized way to poll a check. ie: a HttpProbe will specialize in polling HTTP resources.
+type Probe interface {
+	Test(c *Check) *Event
 }
 
 type directPoller struct {
@@ -33,14 +33,14 @@ func NewDirectPoller() Poller {
 	return &directPoller{}
 }
 
-func (dp *directPoller) Run(scheduler Scheduler, backend Backend, service Service, alerter Alerter) {
+func (dp *directPoller) Run(scheduler Scheduler, backend Backend, probe Probe, alerter Alerter) {
 	for check := range scheduler.Next() {
-		go dp.poll(check, backend, service, alerter)
+		go dp.poll(check, backend, probe, alerter)
 	}
 }
 
-func (db *directPoller) poll(check *Check, backend Backend, service Service, alerter Alerter) {
-	event := service.Poll(check)
+func (db *directPoller) poll(check *Check, backend Backend, probe Probe, alerter Alerter) {
+	event := probe.Test(check)
 	go backend.Log(event)
 	if event.Check.ShouldAlert() {
 		go alerter.Alert(event)
