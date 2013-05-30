@@ -49,11 +49,11 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	pollerPool := poller.NewHttpPoller(*userAgent, *timeout)
+	httpProbe := poller.NewHttpProbe(*userAgent, *timeout)
 	poller := poller.NewDirectPoller()
 
 	go httpInput(config)
-	go poller.Run(config.Scheduler(), backendPool, pollerPool, alerterPool)
+	go poller.Run(config.Scheduler(), backendPool, httpProbe, alerterPool)
 	go config.Scheduler().Start()
 
 	select {}
