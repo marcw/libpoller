@@ -22,8 +22,14 @@ func (p *httpProbe) Test(c *Check) *Event {
 	start := time.Now().UnixNano()
 	go func(e *Event, eventCh chan<- *Event) {
 		client := &http.Client{Jar: nil}
-		req, err := http.NewRequest("GET", c.Url.String(), nil)
-		req.Header = c.Header
+		req, err := http.NewRequest("GET", c.Config.GetString("url"), nil)
+		var header = http.Header{}
+
+		for k, v := range c.Config.GetMapStringString("headers") {
+			header.Set(k, v)
+		}
+
+		req.Header = header
 		req.Header.Set("User-Agent", p.UserAgent)
 
 		resp, err := client.Do(req)
@@ -56,5 +62,4 @@ func (p *httpProbe) Test(c *Check) *Event {
 		event.Duration = time.Duration(end - start)
 		return e
 	}
-	panic("unreachable")
 }

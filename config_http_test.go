@@ -14,16 +14,7 @@ func TestServeHTTPPost(t *testing.T) {
 	server := httptest.NewServer(NewConfigHttpHandler(c))
 	defer server.Close()
 
-	json := `
-    {
-    "key": "connect_sensiolabs_com_api",
-    "url": "https://connect.sensiolabs.com/api/",
-    "timeout": "10s",
-    "interval": "60s",
-    "headers": {
-        "Accept": "application/vnd.com.sensiolabs.connect+xml"}}`
-
-	r, err := http.NewRequest("POST", server.URL, strings.NewReader(json))
+	r, err := http.NewRequest("POST", server.URL, strings.NewReader(testJsonHttpCheck))
 	if err != nil {
 		t.Log(err)
 		t.FailNow()
@@ -33,16 +24,14 @@ func TestServeHTTPPost(t *testing.T) {
 		t.Error(err)
 	}
 	if resp.StatusCode != 201 {
-		t.Errorf("Status code should be 201. Got %d", resp.StatusCode)
+		body, _ := ioutil.ReadAll(resp.Body)
+		t.Errorf("Status code should be 201. Got %d\n", resp.StatusCode)
+		t.Errorf(string(body))
 	}
 	check := c.checks.Get("connect_sensiolabs_com_api")
 	if check == nil {
 		t.Log("Checkslist should contain key check")
 		t.FailNow()
-	}
-
-	if check.Header.Get("Accept") != "application/vnd.com.sensiolabs.connect+xml" {
-		t.Error("Check headers does not contain Accept header")
 	}
 
 	if check.Interval.Seconds() != 60 {
@@ -61,7 +50,7 @@ func TestServeHTTPPost(t *testing.T) {
 		t.FailNow()
 	}
 	resp.Body.Close()
-	json = string(data)
+	json := string(data)
 	c.Clear()
 
 	r, err = http.NewRequest("PUT", server.URL, strings.NewReader(json))
@@ -80,10 +69,6 @@ func TestServeHTTPPost(t *testing.T) {
 	if check == nil {
 		t.Log("Checkslist should contain key check")
 		t.FailNow()
-	}
-
-	if check.Header.Get("Accept") != "application/vnd.com.sensiolabs.connect+xml" {
-		t.Error("Check headers does not contain Accept header")
 	}
 
 	if check.Interval.Seconds() != 60 {

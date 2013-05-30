@@ -6,29 +6,13 @@ import (
 )
 
 func TestNewCheck(t *testing.T) {
-	_, err := NewCheck("https://google.com", "foobar", "1s", false, "", false, make(map[string]string))
-	if err != nil {
+	if _, err := NewCheck("foobar", "1s", false, "", false, make(map[string]interface{})); err != nil {
 		t.Error("NewCheck should not returns an error here")
-	}
-
-	_, err = NewCheck("http://google.com", "foobar", "1s", false, "", false, make(map[string]string))
-	if err != nil {
-		t.Error("NewCheck should not returns an error here")
-	}
-
-	_, err = NewCheck("https://google.com:8444", "foobar", "1s", false, "", false, make(map[string]string))
-	if err != nil {
-		t.Error("NewCheck should not returns an error here")
-	}
-
-	_, err = NewCheck("https://google.com:8444", "foobar", "1s", true, "fadsfs", false, make(map[string]string))
-	if err == nil {
-		t.Error("NewCheck should returns an error here")
 	}
 }
 
 func TestShouldAlert(t *testing.T) {
-	c, _ := NewCheck("foo", "foo", "10s", false, "", false, make(map[string]string))
+	c, _ := NewCheck("foo", "10s", false, "", false, make(map[string]interface{}))
 
 	c.Alert = true
 	c.Alerted = false
@@ -69,7 +53,7 @@ func TestShouldAlert(t *testing.T) {
 }
 
 func TestShouldNotifyFix(t *testing.T) {
-	c, _ := NewCheck("foo", "foo", "10s", false, "", true, make(map[string]string))
+	c, _ := NewCheck("foo", "10s", false, "", true, make(map[string]interface{}))
 
 	c.NotifyFix = false
 	c.WasDownFor, _ = time.ParseDuration("10s")

@@ -31,7 +31,8 @@ func TestSuccessfullTest(t *testing.T) {
 
 	probe := NewHttpProbe("foobar", 10*time.Second)
 
-	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
+	c, _ := NewCheck("foobar", "10s", false, "", false, make(map[string]interface{}))
+	c.Config.Set("url", server.URL)
 	event := probe.Test(c)
 	if event.StatusCode != 200 {
 		t.Error("statusCode should be 200")
@@ -50,7 +51,8 @@ func TestFailedTest(t *testing.T) {
 
 	probe := NewHttpProbe("foobar", 10*time.Second)
 
-	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
+	c, _ := NewCheck("foobar", "10s", false, "", false, make(map[string]interface{}))
+	c.Config.Set("url", server.URL)
 	event := probe.Test(c)
 	if event.StatusCode != 500 {
 		t.Error("statusCode should be 500")
@@ -66,7 +68,8 @@ func TestTimeoutedTest(t *testing.T) {
 
 	probe := NewHttpProbe("foobar", 100*time.Millisecond)
 
-	c, _ := NewCheck(server.URL, "foobar", "10s", false, "", false, make(map[string]string))
+	c, _ := NewCheck("foobar", "10s", false, "", false, make(map[string]interface{}))
+	c.Config.Set("url", server.URL)
 	event := probe.Test(c)
 	if event.StatusCode != 0 {
 		t.Error("statusCode should be 0")

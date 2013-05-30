@@ -1,29 +1,42 @@
 package poller
 
 import (
-	"net"
-	"net/http"
-	"net/url"
+	"fmt"
+	"github.com/marcw/bag"
 	"time"
 )
 
+type CheckType string
+
+const (
+	CheckTypeUDP  CheckType = "udp"
+	CheckTypeHTTP CheckType = "http"
+)
+
 type Check struct {
-	Url        *url.URL      // URL of check
-	Addr       net.Addr      // 
-	Key        string        // Key (should be unique among same Scheduler
-	Interval   time.Duration // Interval between each check
-	Header     http.Header   // HTTP Headers (if any)
+	Key       string    // Key (should be unique among same Scheduler
+	checkType CheckType // Type of check
+
+	Interval time.Duration // Interval between each check
+
 	UpSince    time.Time     // Time since the service is up
 	DownSince  time.Time     // Time since the service is down
 	WasDownFor time.Duration // Time since the service was down
 	WasUpFor   time.Duration // Time since the service was up
-	Alert      bool          // Raise alert if service is down
-	Alerted    bool          // Is backend already alerted?
-	NotifyFix  bool          // Notify if service is back up
+
+	Alert     bool // Raise alert if service is down
+	Alerted   bool // Is backend already alerted?
+	NotifyFix bool // Notify if service is back up
+
 	AlertDelay time.Duration // Delay before raising an alert (zero value = NOW)
+	Config     *bag.Bag
 }
 
-func NewCheck(checkUrl, key, interval string, alert bool, alertDelay string, notifyFix bool, headers map[string]string) (*Check, error) {
+func newCheck() *Check {
+	return &Check{Config: bag.NewBag()}
+}
+
+func NewCheck(key, interval string, alert bool, alertDelay string, notifyFix bool, config map[string]interface{}) (*Check, error) {
 	d, err := time.ParseDuration(interval)
 	if err != nil {
 		return nil, err
@@ -37,32 +50,7 @@ func NewCheck(checkUrl, key, interval string, alert bool, alertDelay string, not
 		}
 	}
 
-	h := http.Header{}
-	for k, v := range headers {
-		h.Set(k, v)
-	}
-
-	u, err := url.Parse(checkUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	host := u.Host
-	_, err = net.ResolveTCPAddr("tcp", u.Host)
-	if err != nil {
-		if u.Scheme == "http" {
-			host = host + ":80"
-		} else {
-			host = host + ":443"
-		}
-	}
-
-	a, err := net.ResolveTCPAddr("tcp", host)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Check{Url: u, Key: key, Interval: d, Header: h, Addr: a, Alert: alert, AlertDelay: ad, NotifyFix: notifyFix}, nil
+	return &Check{Key: key, Interval: d, Alert: alert, AlertDelay: ad, NotifyFix: notifyFix, Config: bag.From(config)}, nil
 }
 
 // Check if it's time to send the alert. Returns true if it is.
@@ -84,4 +72,16 @@ func (c *Check) ShouldNotifyFix() bool {
 	}
 
 	return false
+}
+
+func (c *Check) Type() CheckType {
+	return c.checkType
+}
+
+func (c *Check) AlertDescription() string {
+	if c.Type() == CheckTypeHTTP {
+		return fmt.Sprintf("%s (%s)", c.Key, c.Config.GetString("url"))
+	}
+
+	return ""
 }

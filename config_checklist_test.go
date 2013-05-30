@@ -11,7 +11,7 @@ func TestCheckListOperations(t *testing.T) {
 		t.Error("CheckList's length should be 0")
 	}
 
-	check, _ := NewCheck("http://google.com", "foobar", "10s", false, "0s", false, make(map[string]string))
+	check, _ := NewCheck("foobar", "10s", false, "0s", false, make(map[string]interface{}))
 	cl.Add(check)
 
 	if 1 != cl.Len() {
@@ -36,7 +36,7 @@ func TestCheckListOperations(t *testing.T) {
 
 func TestNewCheckListFromJSON(t *testing.T) {
 	cl := NewCheckList()
-	check, _ := NewCheck("http://google.com", "foobar", "10s", false, "0s", false, make(map[string]string))
+	check, _ := NewCheck("foobar", "10s", false, "0s", false, make(map[string]interface{}))
 	cl.Add(check)
 
 	json, _ := cl.JSON()

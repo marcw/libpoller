@@ -69,8 +69,8 @@ func NewSmtpAlerter() (Alerter, error) {
 
 func (m *smtpAlerter) Alert(event *Event) {
 	msg := m.message
-	msg.Subject = fmt.Sprintf("[ALERT] %s is down", event.Check.Url.String())
-	msg.Body = fmt.Sprintf("Poller alert: %s (%s) is down since %s", event.Check.Key, event.Check.Url.String(), event.Check.DownSince.Format(time.RFC822))
+	msg.Subject = fmt.Sprintf("[ALERT] %s is down", event.Check.Key)
+	msg.Body = fmt.Sprintf("Poller alert: %s is down since %s", event.Check.AlertDescription(), event.Check.DownSince.Format(time.RFC822))
 
 	if err := smtp.SendMail(m.addr, m.auth, msg.From.String(), msg.Recipients(), msg.Bytes()); err != nil {
 		println(err)
@@ -92,7 +92,7 @@ func NewPagerDutyAlerter() (Alerter, error) {
 }
 
 func (pda *pagerDutyAlerter) Alert(event *Event) {
-	description := fmt.Sprintf("%s (%s) is DOWN since %s.", event.Check.Key, event.Check.Url.String(), event.Check.DownSince.Format(time.RFC3339))
+	description := fmt.Sprintf("%s is DOWN since %s.", event.Check.AlertDescription(), event.Check.DownSince.Format(time.RFC3339))
 	e := pagerduty.NewTriggerEvent(pda.serviceKey, description)
 	e.Details["checked_at"] = event.Time.Format(time.RFC3339)
 	e.Details["duration"] = event.Duration.String()
