@@ -1,15 +1,18 @@
 [
     {
+        "type": "http",
         "key": "com_google",
         "url": "http://google.com",
         "interval": "10s"
     },
     {
+        "type": "http",
         "key": "fr_yahoo",
         "url": "http://yahoo.fr",
         "interval": "10s"
     },
     {
+        "type": "http",
         "key": "connect_sensiolabs_com_api",
         "url": "https://connect.sensiolabs.com/api/",
         "interval": "60s",
