@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Poller : A simple and composable HTTP monitoring application written in Go" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Poller</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/marcw/poller">View on GitHub</a>
+
+          <h1 id="project_title">Poller</h1>
+          <h2 id="project_tagline">A simple and composable HTTP monitoring application written in Go</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/marcw/poller/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/marcw/poller/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="poller" class="anchor" href="#poller"><span class="octicon octicon-link"></span></a>Poller</h1>
+
+<p>A composable HTTP monitoring framework and application written in Go.</p>
+
+<p>It's very alpha for now, so please bear with it.</p>
+
+<h2>
+<a name="what-is-it" class="anchor" href="#what-is-it"><span class="octicon octicon-link"></span></a>What is it?</h2>
+
+<p>Poller's job is to monitor http applications by submitting GET requests to URL
+you define in a config file. These URLs are called "Checks".</p>
+
+<p>Once a check is done, the result is sent to one or many backends of your choice. </p>
+
+<p>Current supported backends are stdout, syslog,
+<a href="http://metrics.librato.com/">librato</a> and <a>statsd</a>.</p>
+
+<h2>
+<a name="how-to-build-it" class="anchor" href="#how-to-build-it"><span class="octicon octicon-link"></span></a>How to build it</h2>
+
+<p>Given you have a working go install, this command will produce the poller
+binary in <code>./bin/poller</code></p>
+
+<pre><code>$ ./bin/build
+</code></pre>
+
+<h2>
+<a name="how-to-configure-it" class="anchor" href="#how-to-configure-it"><span class="octicon octicon-link"></span></a>How to configure it</h2>
+
+<p>Configuration is done via:</p>
+
+<ul>
+<li>Environment variables for backend.</li>
+<li>JSON for list of checks</li>
+<li>Flags passed when executing the program.</li>
+</ul><p>A typical json file for checks looks like this</p>
+
+<pre><code>[
+    {
+        "key": "com_google",                // Key should be unique among all checks specified
+        "url": "http://google.com",         // URL of the check
+        "interval": "10s",                  // Check will be perfom every 10s. Format available here: http://godoc.org/time#ParseDuration
+        "alert": true,                      // (optional) Enable "alerts" for this checks.
+        "alertDelay": "60s"                 // (required if alert is set) Wait 60s (or 6 other checks after the first downtime) before sending an alert
+    },
+    {
+        "key": "fr_yahoo",
+        "url": "http://yahoo.fr",
+        "interval": "10s"
+    },
+    {
+        "key": "connect_sensiolabs_com_api",
+        "url": "https://connect.sensiolabs.com/api/",
+        "interval": "60s",
+        "headers": {
+            "Accept": "application/vnd.com.sensiolabs.connect+xml"  // (optional) Added HTTP header
+        }
+    }
+]
+</code></pre>
+
+<p>The JSON config file is optional as checks can be added thanks to the HTTP endpoint <code>/checks</code>.</p>
+
+<p>Running <code>./poller --help</code> will prints a list of available options.</p>
+
+<h2>
+<a name="how-to-monitor-it" class="anchor" href="#how-to-monitor-it"><span class="octicon octicon-link"></span></a>How to monitor it?</h2>
+
+<p>A <code>/health</code> http endpoint is available. If poller is answering a 200, then all
+is good!</p>
+
+<h2>
+<a name="how-to-receive-alerts-when-a-check-is-down" class="anchor" href="#how-to-receive-alerts-when-a-check-is-down"><span class="octicon octicon-link"></span></a>How to receive alerts when a check is down?</h2>
+
+<p>Alerting and alerting delay is customisable for each check (Please read the example configuration).
+"Alerters" are enabled from the command line with the <code>--alerts</code> flag. </p>
+
+<pre><code># Enable the smtp alerter
+./poller --alerts="smtp"
+
+# Enable both the pagerduty and smtp alerter
+./poller --alerts="smtp,pagerduty"
+</code></pre>
+
+<h3>
+<a name="smtp-alerter" class="anchor" href="#smtp-alerter"><span class="octicon octicon-link"></span></a>SMTP Alerter</h3>
+
+<p>The SMTP Alerter is enabled when you run poller like this:</p>
+
+<pre><code>./poller --alerts="smtp"
+</code></pre>
+
+<p>SMTP alerter is configured using these environment variables:</p>
+
+<ul>
+<li>
+<code>SMTP_HOST</code>: (required) ie: localhost</li>
+<li>
+<code>SMTP_PORT</code>: (required) ie: 25</li>
+<li>
+<code>SMTP_AUTH</code>: (optional) "MD5" or "PLAIN"</li>
+<li>
+<code>SMTP_USERNAME</code>: (optional)</li>
+<li>
+<code>SMTP_PASSWORD</code>: (optional)</li>
+<li>
+<code>SMTP_PLAIN_IDENTITY</code>: (optional)</li>
+<li>
+<code>SMTP_RECIPIENT</code>: (required) ie: <a href="mailto:monitoring@example.org">monitoring@example.org</a>
+</li>
+<li>
+<code>SMTP_FROM</code>: (required) ie: <a href="mailto:poller@example.org">poller@example.org</a>
+</li>
+</ul><h4>
+<a name="pagerduty-alerter" class="anchor" href="#pagerduty-alerter"><span class="octicon octicon-link"></span></a>PagerDuty Alerter</h4>
+
+<p>The PagerDuty alerter is enabled when you run poller like this:</p>
+
+<pre><code>./poller --alerts="pagerduty"
+</code></pre>
+
+<p><a href="http://www.pagerduty.com/">PagerDuty</a>'s alerter is configured using these environment variables: </p>
+
+<ul>
+<li>
+<code>PAGERDUTY_SERVICE_KEY</code>: (required) PagerDuty's Service Key. <a href="http://developer.pagerduty.com/documentation/integration/events">Please read the Getting started section</a>.</li>
+</ul><h2>
+<a name="how-to-add-checks-while-poller-is-running" class="anchor" href="#how-to-add-checks-while-poller-is-running"><span class="octicon octicon-link"></span></a>How to add checks while poller is running</h2>
+
+<p>Poller supports live configuration changes thanks to the <code>/checks</code> http endpoint.
+Send a <code>PUT</code> request with a valid config JSON in the body of the request and poller
+will append the checks to its list.</p>
+
+<h3>
+<a name="backends-configuration" class="anchor" href="#backends-configuration"><span class="octicon octicon-link"></span></a>Backends configuration</h3>
+
+<p>Here is a list of supported backend and how to configure them with environment
+variables. Backends are enabled from the command-line thanks to the <code>--backend</code> flag.</p>
+
+<pre><code># Enable the stdout backend
+./poller --backends="stdout"
+
+# Enable both the librato and stdout backend
+./poller --backends="librato,stdout"
+</code></pre>
+
+<h4>
+<a name="librato" class="anchor" href="#librato"><span class="octicon octicon-link"></span></a>Librato</h4>
+
+<ul>
+<li>
+<code>LIBRATO_USER</code> (required): Username of your librato account</li>
+<li>
+<code>LIBRATO_TOKEN</code> (required): API token of your librato account</li>
+<li>
+<code>LIBRATO_SOURCE</code> (optional): Source name for your metrics. Defaults to <code>poller</code>
+</li>
+<li>
+<code>LIBRATO_PREFIX</code> (optional): Prefix of your metrics. Defaults to <code>poller.checks.</code>
+</li>
+</ul><p>Given your check's key is <code>foobar</code> and <code>LIBRATO_PREFIX</code> is <code>acme.</code>:</p>
+
+<p>On success:</p>
+
+<ul>
+<li>
+<code>1</code> will be sent to metrics <code>acme.foobar.up</code>
+</li>
+<li>The duration in milliseconds will be sent to <code>foobar.duration</code>
+</li>
+</ul><p>On error or timeout:</p>
+
+<ul>
+<li>
+<code>0</code> will be sent to metrics <code>acme.foobar.up</code>
+</li>
+<li>The duration in milliseconds will be sent to <code>foobar.duration</code>
+</li>
+</ul><h4>
+<a name="stdout" class="anchor" href="#stdout"><span class="octicon octicon-link"></span></a>Stdout</h4>
+
+<p>No configuration is necessary.
+Output will look like this:</p>
+
+<pre><code>2012/01/24 11:35:16 com_google UP 345.271ms
+2012/01/24 11:35:17 fr_yahoo DOWN 1.518175s
+2012/01/24 11:35:17 fr_yahoo ALERT Down since 2006-01-02 15:04:05.999999999 -0700 MST
+</code></pre>
+
+<h4>
+<a name="statsd" class="anchor" href="#statsd"><span class="octicon octicon-link"></span></a>Statsd</h4>
+
+<p>Statsd backend uses of these environment variables:</p>
+
+<ul>
+<li>
+<code>STATSD_HOST</code> (required): Host of your statsd instance</li>
+<li>
+<code>STATSD_PORT</code> (optional): Port of your statsd instance. Defaults to 8125.</li>
+<li>
+<code>STATSD_PROTOCOL</code> (optional): Either <code>tcp</code> or <code>udp</code>. Defaults to <code>udp</code>.</li>
+<li>
+<code>STATSD_PREFIX</code> (optional): Prefix of your metrics. Defaults to <code>poller.checks.</code>
+</li>
+</ul><p>The metrics are sent the same way as the Librato backend.</p>
+
+<h4>
+<a name="syslog" class="anchor" href="#syslog"><span class="octicon octicon-link"></span></a>Syslog</h4>
+
+<p>You can configure the syslog backend with these:</p>
+
+<ul>
+<li>
+<code>SYSLOG_NETWORK</code> (optional): "tcp", "tcp4" (IPv4-only), "tcp6" (IPv6-only),
+"udp", "udp4" (IPv4-only), "udp6" (IPv6-only), "ip", "ip4" (IPv4-only), "ip6"
+(IPv6-only), "unix" and "unixpacket". Defaults to nothing.</li>
+<li>
+<code>SYSLOG_ADDRESS</code> (optional): Address of your syslog daemon. Defaults to nothing.</li>
+<li>
+<code>SYSLOG_PREFIX</code> (optional): This will be added to your log. Defaults to "poller".</li>
+</ul><p>Yes, you can send checks results to <a href="http://www.loggly.com/">loggly</a> by using
+the syslog backend.</p>
+
+<p>Output formatting is the same as the stdout backend.</p>
+
+<h2>
+<a name="technical-documentation" class="anchor" href="#technical-documentation"><span class="octicon octicon-link"></span></a>Technical documentation</h2>
+
+<p>Poller's documentation is available on godoc: <a href="http://godoc.org/github.com/marcw/poller">http://godoc.org/github.com/marcw/poller</a></p>
+
+<h2>
+<a name="why-go" class="anchor" href="#why-go"><span class="octicon octicon-link"></span></a>Why Go?</h2>
+
+<p>A Go application has the advantage of being concurrent, fast, cross-compilable
+and easily deployable. I think that's a lot of good reasons to create a
+monitoring system out of this language.</p>
+
+<h3>
+<a name="install-go" class="anchor" href="#install-go"><span class="octicon octicon-link"></span></a>Install go</h3>
+
+<p>note: OSX users, do NOT install Go from homebrew. At time of writing, the
+package is broken and won't let you cross-compile.</p>
+
+<p>Please follow instructions from:
+<a href="http://golang.org/doc/install/source">http://golang.org/doc/install/source</a></p>
+
+<p>Please set a <code>$GOROOT</code> env var in your <code>~/.bashrc.</code> file. If you unpacked the
+go source in <code>/home/you/go</code>:</p>
+
+<pre><code>export GOROOT=/home/you/go
+</code></pre>
+
+<p>Please also set a <code>$GOPATH</code> env var in your <code>~/.bashrc</code> file. <code>$GOPATH</code> is
+where go will look for packages and where you clone private projects.  An
+example of <code>$GOPATH</code> would be <code>/home/you/work/go</code>.</p>
+
+<pre><code>export GOPATH=/home/you/work/go
+</code></pre>
+
+<h3>
+<a name="enable-cross-compilation-with-go" class="anchor" href="#enable-cross-compilation-with-go"><span class="octicon octicon-link"></span></a>Enable cross compilation with Go</h3>
+
+<p>Follow this really good blogpost:
+<a href="http://dave.cheney.net/2012/09/08/an-introduction-to-cross-compilation-with-go">http://dave.cheney.net/2012/09/08/an-introduction-to-cross-compilation-with-go</a></p>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>The Poller code is free to use and distribute, under the <a href="https://github.com/marcw/poller/blob/master/LICENSE">MIT license</a>.</p>
+
+<p><a href="https://travis-ci.org/marcw/poller"><img src="https://travis-ci.org/marcw/poller.png?branch=master" alt="Build Status"></a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Poller maintained by <a href="https://github.com/marcw">marcw</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
