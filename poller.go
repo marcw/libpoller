@@ -14,7 +14,7 @@ type Backend interface {
 	Close()
 }
 
-// A Poller is the glue between a Scheduler, a Backend, a Probe and a Alerter. 
+// A Poller is the glue between a Scheduler, a Backend, a Probe and a Alerter.
 type Poller interface {
 	Run(Scheduler, Backend, Probe, Alerter)
 }
@@ -27,7 +27,7 @@ type Probe interface {
 type directPoller struct {
 }
 
-// NewDirectPoller() returns a "no-frills" Poller instance. 
+// NewDirectPoller() returns a "no-frills" Poller instance.
 // It waits for the next scheduled check, poll it, log it and if alerting is needed, pass it through the alerter.
 func NewDirectPoller() Poller {
 	return &directPoller{}
