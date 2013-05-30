@@ -3,7 +3,6 @@ package poller
 import (
 	"fmt"
 	"github.com/rcrowley/go-librato"
-	"os"
 	"time"
 )
 
@@ -12,18 +11,13 @@ type libratoBackend struct {
 	prefix  string
 }
 
-func NewLibratoBackend() (Backend, error) {
-	user := os.Getenv("LIBRATO_USER")
-	token := os.Getenv("LIBRATO_TOKEN")
-	source := os.Getenv("LIBRATO_SOURCE")
-	prefix := os.Getenv("LIBRATO_PREFIX")
-
+func NewLibratoBackend(user, token, source, prefix string) (Backend, error) {
 	if user == "" {
-		return nil, fmt.Errorf("LIBRATO_USER environment variable must be defined")
+		return nil, fmt.Errorf("Librato user cannot be empty")
 	}
 
 	if token == "" {
-		return nil, fmt.Errorf("LIBRATO_TOKEN environment variable must be defined")
+		return nil, fmt.Errorf("Librato token cannot be empty")
 	}
 
 	if source == "" {

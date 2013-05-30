@@ -3,7 +3,7 @@ package poller
 import (
 	"fmt"
 	"github.com/peterbourgon/g2s"
-	"os"
+	"net"
 )
 
 // Backend for Statsd
@@ -12,40 +12,30 @@ type statsdBackend struct {
 	prefix string
 }
 
-// Instanciate a new StatsdBackend
-// Uses:
-//   STATSD_HOST env variable
-//   STATSD_PORT env variable (defaults to 8125)
-//   STATSD_PROTOCOL env variable (defaults to udp)
-//   STATSD_PREFIX env variable (defaults to `checks.`)
-func NewStatsdBackend() (Backend, error) {
-	envHost := os.Getenv("STATSD_HOST")
-	envPort := os.Getenv("STATSD_PORT")
-	envProtocol := os.Getenv("STATSD_PROTOCOL")
-	envPrefix := os.Getenv("STATSD_PREFIX")
-
-	if envHost == "" {
-		return nil, fmt.Errorf("STATSD_HOST environment variable must be defined")
+// Instanciate a new Backend that will send data to a statsd instance
+func NewStatsdBackend(host, port, protocol, prefix string) (Backend, error) {
+	if host == "" {
+		return nil, fmt.Errorf("Statsd host cannot be empty")
 	}
 
-	if envPort == "" {
-		envPort = "8125"
+	if port == "" {
+		port = "8125"
 	}
 
-	if envProtocol == "" {
-		envProtocol = "udp"
+	if protocol == "" {
+		protocol = "udp"
 	}
 
-	if envPrefix == "" {
-		envPrefix = "checks."
+	if prefix == "" {
+		prefix = "checks."
 	}
 
-	statsd, err := g2s.Dial(envProtocol, envHost+":"+envPort)
+	statsd, err := g2s.Dial(protocol, net.JoinHostPort(host, port))
 	if err != nil {
 		return nil, err
 	}
 
-	return &statsdBackend{statsd: statsd, prefix: envPrefix}, nil
+	return &statsdBackend{statsd: statsd, prefix: prefix}, nil
 }
 
 func (s *statsdBackend) Log(e *Event) {
