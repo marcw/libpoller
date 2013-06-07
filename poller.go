@@ -24,6 +24,15 @@ type Probe interface {
 	Test(c *Check) *Event
 }
 
+// A Store defines a place where configuration can be loaded/persisted.
+type Store interface {
+	Add(*Check) error
+	Get(key string) (*Check, error)
+	Remove(key string) error
+	Len() (int, error)
+	ScheduleAll(Scheduler) error
+}
+
 type directPoller struct {
 }
 

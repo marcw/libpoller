@@ -6,7 +6,7 @@ import (
 )
 
 type Scheduler interface {
-	Schedule(check *Check)
+	Schedule(check *Check) error
 	Stop(key string)
 	StopAll()
 	Start()
@@ -39,12 +39,13 @@ func (s *simpleScheduler) schedule(check *Check, deleteSignal <-chan int) {
 	}
 }
 
-func (s *simpleScheduler) Schedule(check *Check) {
+func (s *simpleScheduler) Schedule(check *Check) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	s.stopSignals[check.Key] = make(chan int)
 	go s.schedule(check, s.stopSignals[check.Key])
+	return nil
 }
 
 func (s *simpleScheduler) stop(key string) {
